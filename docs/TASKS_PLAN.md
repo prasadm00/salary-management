@@ -53,12 +53,12 @@ This is the master plan, start to end. Tick each box as work finishes. Phases ru
 
 All diagrams use Mermaid so they render on GitHub. Put them in `docs/DESIGN.md` or `docs/diagrams/`.
 
-- [ ] **2.1** System context diagram: HR manager, web app, API, database
-- [ ] **2.2** Container diagram: browser UI, Express API, PostgreSQL, hosting (Render, Neon)
-- [ ] **2.3** Deployment diagram: how code gets from GitHub to live
-- [ ] **2.4** Main user flow diagram: browse, search, view, edit salary, dashboard
-- [ ] **2.5** Technology choices with trade-offs table (why Postgres, Prisma, Express, Vite, Tailwind/shadcn, Recharts, Vitest)
-- [ ] **2.6** Non-functional requirements: performance target (list page under 300 ms for 10,000 rows), correctness (decimal money), security basics, accessibility basics
+- [x] **2.1** System context diagram: HR manager, web app, API, database
+- [x] **2.2** Container diagram: browser UI, Express API, PostgreSQL, hosting (Render, Neon)
+- [x] **2.3** Deployment diagram: how code gets from GitHub to live
+- [x] **2.4** Main user flow diagram: browse, search, view, edit salary, dashboard
+- [x] **2.5** Technology choices with trade-offs table (why Postgres, Prisma, Express, Vite, Tailwind/shadcn, Recharts, Vitest)
+- [x] **2.6** Non-functional requirements: performance target (list page under 300 ms for 10,000 rows), correctness (decimal money), security basics, accessibility basics
   - Commit: `docs: add high-level design with context, container, and deployment diagrams`
   - Done when: someone new can explain the system from the diagrams alone.
 

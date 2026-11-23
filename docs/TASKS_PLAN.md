@@ -43,7 +43,7 @@ This is the master plan, start to end. Tick each box as work finishes. Phases ru
   - As an HR manager I can search employees by name or ID.
   - As an HR manager I can see salary statistics by country.
   - Commit: `docs: add user stories and acceptance criteria`
-- [ ] **1.3** Update `docs/DECISIONS.md` with D1 to D5 and the free-hosting rule
+- [x] **1.3** Update `docs/DECISIONS.md` with D1 to D5 and the free-hosting rule
   - Commit: `docs: record decisions on stack, currency, and hosting`
 
 ---

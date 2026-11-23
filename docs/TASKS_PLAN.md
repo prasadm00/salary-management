@@ -39,7 +39,7 @@ This is the master plan, start to end. Tick each box as work finishes. Phases ru
   - Success criteria (what "done" looks like)
   - Commit: `docs: add one-page requirements`
   - Done when: it fits on one page and answers goal, scope, exclusions, reasons.
-- [ ] **1.2** Write user stories with acceptance criteria in `docs/USER_STORIES.md`. Examples:
+- [x] **1.2** Write user stories with acceptance criteria in `docs/USER_STORIES.md`. Examples:
   - As an HR manager I can search employees by name or ID.
   - As an HR manager I can see salary statistics by country.
   - Commit: `docs: add user stories and acceptance criteria`

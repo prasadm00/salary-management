@@ -1,0 +1,6 @@
+{
+  "name": "@acme/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Types and Zod schemas shared by api and web"
+}

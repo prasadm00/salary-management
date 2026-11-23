@@ -30,7 +30,7 @@ This is the master plan, start to end. Tick each box as work finishes. Phases ru
 ## Phase 1. Requirements (one page)
 **Branch:** `docs/requirements`
 
-- [ ] **1.1** Write `docs/REQUIREMENTS.md`, one page, with these sections:
+- [x] **1.1** Write `docs/REQUIREMENTS.md`, one page, with these sections:
   - Goal (one paragraph)
   - Users: HR manager
   - In scope (features list)

@@ -29,7 +29,7 @@ ACME Salary Insights is a web application for an HR manager to manage fictional 
 | Data access | Prisma ORM | Typed database access, migrations, and seed workflow |
 | Validation | Zod | Validate API inputs and environment configuration |
 | Testing | Vitest; Supertest for API tests | Fast unit and HTTP-level tests |
-| Deployment | Static web host + Node API host + managed PostgreSQL | Public demo with persistent relational data |
+| Deployment | One Render web service (API + built UI) + Neon PostgreSQL, all free tiers | Public demo with persistent relational data |
 
 The stack uses TypeScript across the UI and API to reduce mismatches between API contracts and frontend models. PostgreSQL supports relational constraints and aggregation queries; server-side queries keep the 10,000-row dataset out of the browser.
 
@@ -53,14 +53,13 @@ flowchart LR
     SEED[Deterministic seed script] --> ORM
 ```
 
-The browser renders screens and sends user actions to the API. The API authenticates the HR user, validates input, applies salary rules, and queries PostgreSQL through Prisma. Aggregations and pagination run in the database. A deterministic seed script creates exactly 10,000 fictional employee records for repeatable development and demos.
+The browser renders screens and sends user actions to the API. The API validates input, applies salary rules, and queries PostgreSQL through Prisma. Aggregations and pagination run in the database. A deterministic seed script creates exactly 10,000 fictional employee records for repeatable development and demos.
 
 ## 6. Data model outline
 
 - **Employee:** unique employee ID, name, department, job title, level, country, employment status, and hire date.
 - **Compensation:** employee reference, amount, currency code, pay frequency, and effective date.
-- **Compensation change record:** compensation reference, previous and new values, timestamp, and actor.
-- **HR user:** login identity and password hash for the assessment demo.
+- **Compensation change record:** compensation reference, previous and new values, and timestamp. No user is recorded because there is no login for now.
 
 Salary amounts are stored as exact decimal values, not floating-point numbers. Compensation history is kept separately so an update does not erase the prior value. The seed data is fictional and uses a repeatable seed strategy.
 
@@ -81,9 +80,9 @@ List endpoints use bounded page sizes and validated filter/sort parameters. API 
 
 ## 9. Quality, privacy, and operational decisions
 
-- Require authentication for employee and salary data; hash passwords and keep secrets in deployment environment variables.
+- No login for now (decision 005). The demo is open and uses fictional data only. Keep secrets in deployment environment variables.
 - Use fictional data only. Do not include real personal or compensation information in the repository, seed files, screenshots, or demo recording.
-- Validate and authorize compensation changes on the server, and preserve an audit record.
+- Validate compensation changes on the server and preserve an audit record.
 - Add database constraints and indexes for employee ID and common filters such as country, department, and level.
 - Cover salary calculations, currency grouping, validation, filtering/pagination, and compensation-history behavior with deterministic tests.
 - Keep deployment configuration and local setup documented so reviewers can run and inspect the app.
@@ -91,6 +90,7 @@ List endpoints use bounded page sizes and validated filter/sort parameters. API 
 ## 10. Deliberately out of scope
 
 - Payroll processing, bank transfers, tax calculation, benefits, and country-specific legal compliance: these need specialized integrations and jurisdiction-specific rules.
+- Login and user accounts (for now): the brief names one persona and does not ask for authentication. Adding it later is a contained change.
 - Real HRIS integrations, single sign-on, multiple permission tiers, and multi-tenant administration: unnecessary for the single-persona assessment demo.
 - Natural-language AI salary questions: reliable filters and explicit analytics are the core product; an AI layer would add complexity and could make sensitive compensation answers harder to validate.
 - Automatic foreign-exchange conversion: no source, date policy, or target currency was specified.
@@ -99,7 +99,7 @@ These boundaries keep the submission focused on correct compensation data manage
 
 ## 11. Demo path
 
-1. Sign in as the demo HR manager.
+1. Open the app as the HR manager.
 2. Review the dashboard and filter by country or department.
 3. Search the 10,000-employee directory and open an employee profile.
 4. Update a compensation value and show its recorded change history.

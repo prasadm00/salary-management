@@ -44,3 +44,8 @@ export const USD_PER_UNIT = {
   SGD: 0.74,
   BRL: 0.2,
 } as const satisfies Record<CurrencyCode, number>;
+
+/** Every currency in use, once each, in alphabetical order. */
+export const CURRENCIES: readonly CurrencyCode[] = [
+  ...new Set(COUNTRIES.map((country) => country.currency)),
+].sort();

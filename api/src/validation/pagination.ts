@@ -16,14 +16,21 @@ function wholeNumber(message: string, max: number) {
     .refine((value) => value <= max, { error: message });
 }
 
+/** The `page` parameter: starts at 1. Reused by every list endpoint. */
+export const pageField = wholeNumber(PAGE_MESSAGE, MAX_PAGE).default(1);
+
+/** The `pageSize` parameter: 1 to 100, defaults to 25. Reused by every list endpoint. */
+export const pageSizeField = wholeNumber(PAGE_SIZE_MESSAGE, MAX_PAGE_SIZE).default(
+  DEFAULT_PAGE_SIZE,
+);
+
 /**
  * The `page` and `pageSize` query parameters (R-30).
- * Page starts at 1. Page size is 1 to 100 and defaults to 25.
  * Unknown parameters are rejected, so a typo such as `?pagesize=5` is caught.
  */
 export const pagingQuerySchema = z.strictObject({
-  page: wholeNumber(PAGE_MESSAGE, MAX_PAGE).default(1),
-  pageSize: wholeNumber(PAGE_SIZE_MESSAGE, MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
+  page: pageField,
+  pageSize: pageSizeField,
 });
 
 export type PagingQuery = z.output<typeof pagingQuerySchema>;

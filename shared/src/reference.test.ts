@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { COUNTRIES, USD_PER_UNIT, USD_RATES_AS_OF, USD_RATES_NOTE } from './reference.js';
+import {
+  COUNTRIES,
+  CURRENCIES,
+  USD_PER_UNIT,
+  USD_RATES_AS_OF,
+  USD_RATES_NOTE,
+} from './reference.js';
 
 describe('country reference data', () => {
   it('covers ten countries, enough for a meaningful multi-country organisation', () => {
@@ -28,6 +34,12 @@ describe('country reference data', () => {
     expect(currencyOf('DE')).toBe('EUR');
     expect(currencyOf('FR')).toBe('EUR');
     expect(new Set(COUNTRIES.map((country) => country.currency)).size).toBe(9);
+  });
+});
+
+describe('CURRENCIES', () => {
+  it('lists each currency in use once, in alphabetical order', () => {
+    expect(CURRENCIES).toEqual(['AUD', 'BRL', 'CAD', 'EUR', 'GBP', 'INR', 'JPY', 'SGD', 'USD']);
   });
 });
 

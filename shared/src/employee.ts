@@ -58,3 +58,25 @@ export interface Paged<T> {
   /** Number of matching records, not the number on this page. */
   total: number;
 }
+
+/** Columns the employee list can be sorted by. Anything else is refused (R-31). */
+export const EMPLOYEE_SORT_COLUMNS = [
+  'fullName',
+  'employeeCode',
+  'salary',
+  'hireDate',
+  'department',
+  'country',
+  'level',
+] as const;
+export type EmployeeSortColumn = (typeof EMPLOYEE_SORT_COLUMNS)[number];
+
+export const SORT_DIRECTIONS = ['asc', 'desc'] as const;
+export type SortDirection = (typeof SORT_DIRECTIONS)[number];
+
+/**
+ * `local` keeps each salary in its own currency. `usd` converts with the fixed,
+ * illustrative rates, so people paid in different currencies can be compared.
+ */
+export const CURRENCY_VIEWS = ['local', 'usd'] as const;
+export type CurrencyView = (typeof CURRENCY_VIEWS)[number];

@@ -1,4 +1,4 @@
-import { COUNTRIES, type CountryCode, type CurrencyCode } from '@acme/shared';
+import { COUNTRIES, CURRENCIES, type CountryCode, type CurrencyCode } from '@acme/shared';
 import { ValidationError } from '../errors/appErrors.js';
 
 const CURRENCY_BY_COUNTRY: ReadonlyMap<string, CurrencyCode> = new Map(
@@ -8,6 +8,11 @@ const CURRENCY_BY_COUNTRY: ReadonlyMap<string, CurrencyCode> = new Map(
 /** True when the code is one of the supported countries (upper case, for example "IN"). */
 export function isKnownCountry(code: string): code is CountryCode {
   return CURRENCY_BY_COUNTRY.has(code);
+}
+
+/** True when the code is a currency used by one of the supported countries (for example "INR"). */
+export function isKnownCurrency(code: string): code is CurrencyCode {
+  return (CURRENCIES as readonly string[]).includes(code);
 }
 
 /**

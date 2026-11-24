@@ -2,5 +2,12 @@
   "name": "@acme/api",
   "version": "0.1.0",
   "private": true,
-  "description": "Express + Prisma API for salary management"
+  "type": "module",
+  "description": "Express + Prisma API for salary management",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  }
 }

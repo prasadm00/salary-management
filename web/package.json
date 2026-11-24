@@ -2,5 +2,12 @@
   "name": "@acme/web",
   "version": "0.1.0",
   "private": true,
-  "description": "React + Vite UI for salary management"
+  "type": "module",
+  "description": "React + Vite UI for salary management",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  }
 }

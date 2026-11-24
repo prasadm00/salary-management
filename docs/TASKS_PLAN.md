@@ -174,12 +174,12 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 ## Phase 7. Quality gate
 **Branch:** `chore/quality`
 
-- [ ] **7.1** All tests green, lint clean, TypeScript has no errors
-- [ ] **7.2** Coverage report. Core domain and services at 90% or higher.
-- [ ] **7.3** One end-to-end smoke run against the seeded database: search, edit salary, check dashboard
-- [ ] **7.4** Security review: input validation on every endpoint, sort allow-list, CORS locked, no secrets in repo, dependency audit (`npm audit`)
-- [ ] **7.5** Remove all `.gitkeep` files in folders that now have content
-- [ ] **7.6** Code readability pass: clear names, short functions, comments that explain why, not what
+- [x] **7.1** All tests green, lint clean, TypeScript has no errors
+- [x] **7.2** Coverage report. Core domain and services at 90% or higher.
+- [x] **7.3** One end-to-end smoke run against the seeded database: search, edit salary, check dashboard
+- [x] **7.4** Security review: input validation on every endpoint, sort allow-list, CORS locked, no secrets in repo, dependency audit (`npm audit`)
+- [x] **7.5** Remove all `.gitkeep` files in folders that now have content
+- [x] **7.6** Code readability pass: clear names, short functions, comments that explain why, not what
 
 ---
 

@@ -8,6 +8,7 @@ They are not part of `npm test`, because they need a browser and a running app.
 | --- | --- |
 | `screenshots.mjs` | Saves screenshots of the main screens into `docs/screenshots/` |
 | `accessibility.mjs` | Runs the axe accessibility checker (including colour contrast) on 11 page states, on desktop and phone widths |
+| `smoke.mjs` | Does what the HR manager does: dashboard, search, change a salary, see it in recent changes. **Changes one salary**, so reseed afterwards |
 | `keyboard.mjs` | Tab order, the "skip to content" link, sorting with Enter, and the salary dialog (focus stays inside, Escape closes it, focus returns) |
 
 ## How to run
@@ -25,6 +26,7 @@ npm run dev -w web          # http://localhost:5173
 # 3. Run the checks
 node docs/qa/accessibility.mjs
 node docs/qa/keyboard.mjs
+node docs/qa/smoke.mjs       # changes one salary: run `npm run seed -w api` afterwards
 node docs/qa/screenshots.mjs
 ```
 

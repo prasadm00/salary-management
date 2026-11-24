@@ -36,7 +36,7 @@ model Employee {
   compensation Compensation?
   changes      CompensationChange[]
 
-  @@index([country], map: "idx_employees_country")
+  // A filter on country alone also uses this index, so there is no separate country index.
   @@index([department], map: "idx_employees_department")
   @@index([level], map: "idx_employees_level")
   @@index([country, department], map: "idx_employees_country_department")
@@ -44,6 +44,7 @@ model Employee {
   @@index([hireDate], map: "idx_employees_hire_date")
   @@index([fullName(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_employees_full_name_trgm")
   @@index([email(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_employees_email_trgm")
+  @@index([employeeCode(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_employees_code_trgm")
   @@map("employees")
 }
 

@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+package-lock.json
+.history
+.husky/_
+# Hand-formatted tables and diagrams
+docs
+*.md

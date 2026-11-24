@@ -198,11 +198,11 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 ## Phase 9. Free deployment
 **Branch:** `chore/deploy`
 
-- [ ] **9.1** Create Neon project, copy the connection string
+- [x] **9.1** Create Neon project, copy the connection string
 - [x] **9.2** Express serves the built UI as static files, with SPA fallback
 - [x] **9.3** `render.yaml` or manual Render web service: build, migrate, start commands, environment variables
-- [ ] **9.4** Run migrations and the seed against Neon from the local machine
-- [ ] **9.5** Verify live: health, list, search, salary edit, dashboard
+- [x] **9.4** Run migrations and the seed against Neon from the local machine
+- [x] **9.5** Verify live: health, list, search, salary edit, dashboard
 - [ ] **9.6** Free uptime pinger on `/api/health` and a README note about a slow first load
 - [ ] **9.7** Optional: deploy workflow on push to `main`
 

@@ -6,7 +6,7 @@
 
 All numbers were measured on a developer laptop (Apple silicon, macOS) with PostgreSQL 18 running on the same machine,
 using the real seeded data (10,000 employees). They are a snapshot, not a promise. Timings vary by a few milliseconds
-between runs. A free host over the internet will be slower, and that has not been measured yet.
+between runs. On the live site (Render and Neon, over the internet) pages and API calls answered in about 0.3 to 0.9 seconds each, network included.
 
 ## 1. API response times (task 5G.3)
 

@@ -74,7 +74,7 @@ const statsFilters: Json[] = [
   viewParam,
 ];
 
-const currencyParam = query('currency', 'Currency to analyse, for example `INR`.', {
+const currencyParam = query('currency', 'Currency to analyse, for example `INR`. Required when `view` is `local`.', {
   type: 'string',
 });
 
@@ -171,7 +171,7 @@ export const openApiDocument: Json = {
         tags: ['Employees'],
         summary: 'Search, filter, sort and page through employees',
         description:
-          'Sorting by `salary` without a `currency` compares amounts in US dollars. With a `currency`, amounts are compared directly.',
+          'Sorting by `salary` needs one currency: give `currency`, or set `view=usd`. Otherwise the answer is 400, because amounts in different currencies cannot be compared.',
         parameters: [
           query('q', 'Text to find in the name, email or employee code (at most 100 characters).', {
             type: 'string',
@@ -471,7 +471,14 @@ export const openApiDocument: Json = {
                 ],
               },
               message: { type: 'string', example: 'Employee not found.' },
-              details: { type: 'array', items: { type: 'object' } },
+              details: {
+                type: 'array',
+                description: 'Present when a specific field is at fault.',
+                items: {
+                  type: 'object',
+                  properties: { field: { type: 'string' }, message: { type: 'string' } },
+                },
+              },
               requestId: { type: 'string' },
             },
           },
@@ -523,7 +530,7 @@ export const openApiDocument: Json = {
           jobTitle: { type: 'string', maxLength: 80 },
           level: { type: 'string', enum: LEVELS },
           country: { type: 'string', description: 'Country code from `/meta/filters`.' },
-          hireDate: { type: 'string', format: 'date' },
+          hireDate: { type: 'string', format: 'date', description: 'A real date, not in the future.' },
           salary: {
             type: 'string',
             description: "Yearly salary as text, in the country's currency.",

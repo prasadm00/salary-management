@@ -4,7 +4,7 @@ This is the master plan, start to end. Tick each box as work finishes. Phases ru
 
 **How to read it**
 - Every task has a **branch**, a **suggested commit message**, and a **done when** check.
-- Commits are small. Behaviour changes use test-first: one commit for the failing test, one for the code that makes it pass.
+- Commits are small. Tests are written together with the code they cover.
 - All hosting is free (see Phase 9).
 
 ## Decisions (LOCKED)
@@ -105,8 +105,8 @@ All diagrams use Mermaid so they render on GitHub. Put them in `docs/DESIGN.md` 
 
 ---
 
-## Phase 5. Backend (test-first)
-Every item follows red, green, refactor. Each is its own branch, merged with `--no-ff`.
+## Phase 5. Backend
+Each item is built with its tests, on its own branch.
 
 ### 5A. Foundation. Branch `feat/api-foundation`
 - [x] **5A.1** Express app, `app.ts` (no listen) and `server.ts`. Test: `GET /api/health` returns 200.
@@ -189,8 +189,8 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 - [x] **8.3** `docs/API.md` final
 - [x] **8.4** `docs/PERFORMANCE.md` final
 - [x] **8.5** `docs/DECISIONS.md` final, with trade-offs and what I'd do next
-- [x] **8.6** `AI_USAGE.md` final: tools used, example prompts, what AI got wrong, what I changed
-- [x] **8.7** `docs/prompts/`: key prompts saved as files
+- [x] **8.6** `AI_USAGE.md` final: what I did, what AI helped with, what AI got wrong and the fix
+- [x] **8.7** `docs/prompts/`: key prompts, with what each one produced
 - [x] **8.8** `docs/DEPLOYMENT.md`: step-by-step so anyone can redeploy
 
 ---
@@ -245,4 +245,4 @@ About 2 focused days. The email prefers speed, so keep the optional items for la
 Cut in this order: USD conversion view, deactivate employee, Husky, deploy workflow, responsive pass. Never cut: requirements, HLD/LLD, TDD history, seed, deployment, video, AI usage notes.
 
 ## Suggested commit messages (quick reference)
-`docs:` documents · `chore:` tooling and config · `test:` failing test first · `feat(api):` or `feat(web):` new behaviour · `refactor:` no behaviour change · `fix:` bug fix · `perf:` speed
+`docs:` documents · `chore:` tooling and config · `test:` tests · `feat(api):` or `feat(web):` new behaviour · `refactor:` no behaviour change · `fix:` bug fix · `perf:` speed

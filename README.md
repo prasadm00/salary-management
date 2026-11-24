@@ -30,6 +30,7 @@ A web app for an HR manager to manage the salaries of 10,000 employees across 10
 | [Design](docs/DESIGN.md) and [Low-level design](docs/LLD.md) | Diagrams, data model, rules, how each part works |
 | [API](docs/API.md) | Every endpoint. Live Swagger page at `/api/docs`, with a Postman collection to download |
 | [Decisions](docs/DECISIONS.md) | Why PostgreSQL, why no login, the currency policy, and more |
+| [Deployment](docs/DEPLOYMENT.md) | How to put it online on Neon and Render |
 | [Performance](docs/PERFORMANCE.md) | Measured response times and the index review |
 | [Quality report](docs/QUALITY.md) | Coverage, security review and the end-to-end smoke test |
 | [Browser checks](docs/qa/README.md) | Accessibility, keyboard and screenshot checks |
@@ -101,5 +102,5 @@ Accessibility rules are also checked inside the tests. See [docs/qa](docs/qa/REA
 
 ## Branching and commits
 
-- `main` is always deployable. Work happens on short-lived branches (`feat/`, `fix/`, `chore/`, `docs/`, `test/`) merged with `--no-ff`.
-- Conventional Commits. Behaviour changes start with a failing test commit, then the code commit.
+- Work happens on short-lived branches (`feat/`, `fix/`, `chore/`, `docs/`) and is merged into `develop`, then `main`.
+- Conventional Commits. Tests are written together with the code they cover.

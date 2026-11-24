@@ -40,7 +40,7 @@ Status values: **Accepted** (in force), **Superseded** (replaced by a later entr
 **Decision:** Neon for the database and one Render web service that serves both the API and the built UI. No paid services.
 **Why:** The brief needs a deployed app. One service means one URL and no CORS setup.
 **Trade-off:** The free API sleeps when idle, so the first request can take up to a minute.
-**Mitigation:** A free uptime pinger on `/api/health`, and a note in the README.
+**Mitigation:** A message in the UI after 5 seconds, a note in the README, and an optional free uptime pinger on `/api/health`.
 **Rejected:** Render Postgres (the free database expires after about 30 days). Railway and Fly.io (no lasting free tier). Separate Vercel hosting for the UI (adds CORS and a second deployment).
 
 ## 005. No login for now (D2)

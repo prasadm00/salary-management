@@ -1,6 +1,6 @@
 # High-Level Design (HLD)
 
-This document explains the system from the outside in: who uses it, what it is made of, how it is deployed, and how a user moves through it. Detailed design (tables, API, class structure) is in the low-level design, added in Phase 3.
+This document explains the system from the outside in: who uses it, what it is made of, how it is deployed, and how a user moves through it. Detailed design (tables, API, class structure) is in the [low-level design](LLD.md) and the [API contract](API.md).
 
 Related: [Requirements](REQUIREMENTS.md) · [User stories](USER_STORIES.md) · [Decisions](DECISIONS.md)
 
@@ -66,12 +66,10 @@ How code gets from GitHub to a live URL. Every service is on a free tier (decisi
 flowchart LR
     DEV["Developer<br/>(local machine)"] -- "git push" --> GH["GitHub repository"]
     GH -- "on push / PR" --> CI["GitHub Actions<br/>lint + tests"]
-    CI -- "green" --> OK{"Tests pass?"}
-    OK -- "yes, main branch" --> RENDER["Render<br/>build UI + API,<br/>run migrations, start"]
-    OK -- "no" --> FIX["Fix and push again"]
+    GH -- "push to main" --> RENDER["Render<br/>build UI + API,<br/>run migrations, start"]
     RENDER --> LIVE["Live URL<br/>(UI + API together)"]
     RENDER -- "DATABASE_URL" --> NEON[("Neon PostgreSQL")]
-    PING["Free uptime pinger"] -- "GET /api/health<br/>every ~10 min" --> LIVE
+    PING["Optional free uptime pinger"] -- "GET /api/health<br/>every ~5 min" --> LIVE
     DEV -- "one-off: run seed<br/>against Neon" --> NEON
 ```
 
@@ -84,7 +82,7 @@ flowchart LR
 | Config | `.env` (not committed) | Render environment variables |
 | Data | Seeded locally | Seeded once from the developer machine |
 
-**Free-tier behaviour:** Render sleeps the API after about 15 minutes idle, so the first request can take up to a minute. The pinger and a README note reduce the impact.
+**Free-tier behaviour:** Render sleeps the API after about 15 minutes idle, so the first request can take up to a minute. The UI shows a "server is waking up" message after 5 seconds, and an optional pinger keeps it awake.
 
 ## 4. Main user flow
 
@@ -155,7 +153,7 @@ sequenceDiagram
 | Database | PostgreSQL | Exact `NUMERIC` money, median and percentile functions, free persistent hosting (Neon) | Needs Docker locally | SQLite (no decimal type, weak aggregates) |
 | ORM | Prisma | Typed queries, migrations, simple seed workflow | Complex statistics need raw SQL | Drizzle, Knex (less tooling out of the box) |
 | API | Express | Small, well known, easy to test with Supertest | No built-in structure, so we add modules ourselves | NestJS (more setup than this scope needs) |
-| Validation | Zod | One schema for runtime checks and types, shared by UI and API | Another library to learn | Hand-written checks |
+| Validation | Zod | One schema checks every request on the API and gives it types | Another library to learn | Hand-written checks |
 | UI build | Vite + React | Fast dev server, simple build | Single-page app, no server rendering | Next.js (more than needed, no SEO need) |
 | Server state | TanStack Query | Caching, loading and error states, easy paging | Extra dependency | Manual fetch and state |
 | Styling | Tailwind CSS + shadcn/ui | Accessible components, quick consistent look, components live in our repo | Utility classes are verbose | Material UI (heavier), plain CSS (slower) |
@@ -168,16 +166,16 @@ sequenceDiagram
 
 | Area | Target | How we meet it | How we check it |
 | --- | --- | --- | --- |
-| **Performance** | List and statistics responses under 300 ms with 10,000 rows | Database-side filtering, sorting, paging and statistics. Indexes on country, department, level, code and name. Page size capped at 100. | `EXPLAIN ANALYZE` before and after indexes, recorded in `docs/PERFORMANCE.md` |
+| **Performance** | List and statistics responses under 300 ms with 10,000 rows | Database-side filtering, sorting, paging and statistics. Indexes for the search, the filters and the sorts (see Performance). Page size capped at 100. | `EXPLAIN ANALYZE` before and after indexes, recorded in `docs/PERFORMANCE.md` |
 | **Correctness** | No rounding errors in money, no mixed-currency totals | `NUMERIC(14,2)` in the database, decimal handling in code (never floating point), grouping by currency | Unit tests on small hand-checked datasets |
 | **Data integrity** | Salary change and its history are never out of step | One database transaction, unique constraints on code and email, foreign keys | Tests that force a failure and check rollback |
-| **Security** | Safe for an open, fictional-data demo | Validate every input at the API edge. Parameterised queries (Prisma). Sort columns from an allow-list. CORS limited to the app origin. No secrets in the repository. Security headers. `npm audit` before release. Error messages never leak internals. | Tests for invalid input and unknown sort columns, dependency audit |
+| **Security** | Safe for an open, fictional-data demo | Validate every input at the API edge. Parameterised queries (Prisma). Sort columns from an allow-list. CORS limited to one origin when configured (the UI and API share one address in production). No secrets in the repository. Security headers. `npm audit` before release. Error messages never leak internals. | Tests for invalid input and unknown sort columns, dependency audit |
 | **Privacy** | No real personal data | Seed uses generated names and emails only | Review of seed script and demo |
 | **Reliability** | Clear failure behaviour | Consistent error format. `/api/health` checks database connectivity. Graceful handling of a sleeping or slow API in the UI. | Health and error-handler tests |
-| **Accessibility** | Usable with keyboard, readable | Labelled form fields, visible focus, sufficient contrast, semantic table markup, error text tied to fields | Manual keyboard pass and a checklist |
+| **Accessibility** | Usable with keyboard, readable | Labelled form fields, visible focus, sufficient contrast, semantic table markup, error text tied to fields | Axe checker on 11 page states, a keyboard script, and axe rules inside the test suite |
 | **Maintainability** | Easy for a newcomer to read | Feature modules, small functions, strict TypeScript, lint and format on CI, docs beside code | CI green, code review |
 | **Testability** | Fast and deterministic | Pure domain logic separate from I/O, seeded random data, isolated test database | Suite runs in seconds locally |
-| **Observability** | Enough to debug a demo | Structured request logs, request ID in error responses | Manual check |
+| **Observability** | Enough to debug a demo | Request ID on every response and error body, `/api/health` for uptime checks | Error-handler tests |
 
 ## 7. What a newcomer should take from this
 1. One user, one web app, one database.

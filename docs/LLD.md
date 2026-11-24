@@ -910,14 +910,14 @@ Vitest thresholds enforce the numbers, so CI fails if coverage drops. Coverage i
 | US-15 | `generateDataset.test.ts`, `seedWriter.http.test.ts` |
 | US-16, US-17 | Health and error-handler tests, performance check, manual smoke |
 
-### 8.7 Working method (test-first)
+### 8.7 Working method
 1. Pick one rule or acceptance criterion.
-2. Write a failing test. Run it and see it fail for the right reason. **Commit:** `test: <behaviour>`.
-3. Write the smallest code that passes. **Commit:** `feat: <behaviour>`.
-4. Refactor with tests green. **Commit:** `refactor: <what>`.
+2. Write a test for it and see it fail for the right reason.
+3. Write the smallest code that passes.
+4. Refactor with the tests green, then commit the code and its tests together.
 
 ### 8.8 Continuous integration
-GitHub Actions on every push and pull request: install, lint, type-check, run unit, API and frontend tests with a PostgreSQL service container, upload the coverage summary. Merges to `main` need a green run.
+GitHub Actions on every push and pull request: install, lint, type-check, run unit, API and frontend tests with a PostgreSQL service container, upload the coverage summary. The same run is the quality gate for pull requests.
 
 ### 8.9 Deliberately not tested
 Visual styling, the shadcn and Recharts libraries themselves, Prisma's own behaviour, and the free hosts' uptime.

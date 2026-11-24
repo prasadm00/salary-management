@@ -128,11 +128,11 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 - [x] **5C.5** Optional: deactivate employee (status change, never hard delete)
 
 ### 5D. Search, filter, sort, pagination. Branch `feat/employee-search`
-- [ ] **5D.1** Pagination. Tests: default page size, max 100, page beyond end returns empty list with correct total.
-- [ ] **5D.2** Filters by country, department, level, status. Tests: each alone and combined.
-- [ ] **5D.3** Text search by name, email, or code. Tests: case-insensitive, partial match.
-- [ ] **5D.4** Sorting with an allow-list of columns. Tests: unknown column rejected (prevents injection through sort).
-- [ ] **5D.5** Filter options endpoint for dropdowns.
+- [x] **5D.1** Pagination. Tests: default page size, max 100, page beyond end returns empty list with correct total.
+- [x] **5D.2** Filters by country, department, level, status. Tests: each alone and combined.
+- [x] **5D.3** Text search by name, email, or code. Tests: case-insensitive, partial match.
+- [x] **5D.4** Sorting with an allow-list of columns. Tests: unknown column rejected (prevents injection through sort).
+- [x] **5D.5** Filter options endpoint for dropdowns.
 
 ### 5E. Analytics. Branch `feat/analytics`
 - [ ] **5E.1** Headcount by country, department, level

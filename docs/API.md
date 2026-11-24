@@ -123,9 +123,9 @@ Stories: US-01 to US-04.
 
 | Parameter | Type | Default | Rules |
 | --- | --- | --- | --- |
-| `q` | string | none | 1 to 100 characters. Case-insensitive "contains" match on name, email or employee code. |
-| `country` | country code | all | |
-| `department` | string | all | |
+| `q` | string | none | Up to 100 characters, trimmed. Case-insensitive "contains" match on name, email or employee code. `%`, `_` and `\` are searched for literally, never as wildcards. Blank text means "no search", so an emptied search box shows everyone. |
+| `country` | country code | all | Must be a supported country. |
+| `department` | string | all | Exact match, 1 to 60 characters. Use the values from `/api/meta/filters`. |
 | `level` | `L1` to `L6` | all | |
 | `status` | `ACTIVE`, `INACTIVE` | all | Omit to include both |
 | `currency` | ISO code | all | Needed for salary sorting (see below) |
@@ -137,7 +137,11 @@ Stories: US-01 to US-04.
 
 **Salary sorting rule.** Comparing raw amounts across currencies is meaningless (10,000 INR is not 10,000 USD). So `sortBy=salary` is accepted only when the results are in one currency (`currency` is given) or when `view=usd`. Otherwise the API returns `400` with the message "Choose a currency or switch to the USD view to sort by salary."
 
-**Order is stable.** Every sort ends with `id` as a tie-breaker, so paging never repeats or skips a person.
+**Order is stable.** Every sort ends with `id` ascending as a tie-breaker, whatever the sort direction, so paging never repeats or skips a person. Names and departments are compared in lower case, so the order is the same on every database setup.
+
+**Each parameter may be given once.** `?country=IN&country=US` is refused with `400`, so the API never silently picks one of the values.
+
+**The USD view only changes sorting.** With `view=usd`, `sortBy=salary` orders people by their salary converted with the fixed rates (exact decimals, not rounded). The amounts in the response stay in each person's own currency, and the same people are listed.
 
 **Example**
 ```

@@ -419,8 +419,13 @@ api/src/
 │   │   ├── employee.schema.ts     Zod schemas for body and URL parameters
 │   │   ├── employee.controller.ts
 │   │   ├── employee.service.ts
-│   │   ├── employee.repository.ts         the interface the services depend on
-│   │   └── prismaEmployeeRepository.ts    the PostgreSQL implementation (maps rows to API objects)
+│   │   ├── employee.repository.ts         writes and single reads (interface)
+│   │   ├── prismaEmployeeRepository.ts    the PostgreSQL implementation of the above
+│   │   ├── employeeList.schema.ts         the list query string: filters, sort, paging
+│   │   ├── employeeQuery.repository.ts    search, filter, sort, page (interface, read-only)
+│   │   ├── prismaEmployeeQueryRepository.ts   the PostgreSQL search, one SQL query for the order and one for the count
+│   │   ├── employeeQuery.service.ts       the list use case and the salary-sort rule (R-32)
+│   │   └── employee.mapper.ts             database row to API object
 │   ├── compensation/              salary change and history: routes, schema, controller, service.
 │   │                              Uses the employees repository, because one transaction
 │   │                              touches the employee, salary and history tables together.

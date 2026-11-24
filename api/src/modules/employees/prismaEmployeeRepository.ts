@@ -1,4 +1,4 @@
-import type { CompensationChange, Employee, EmploymentStatus, Level } from '@acme/shared';
+import type { CompensationChange, Employee, EmploymentStatus } from '@acme/shared';
 import type { PrismaClient } from '../../db/prisma.js';
 import { ConflictError } from '../../errors/appErrors.js';
 import { Prisma } from '../../generated/prisma/client.js';
@@ -10,8 +10,7 @@ import type {
   NewEmployeeData,
   Paging,
 } from './employee.repository.js';
-
-type EmployeeWithCompensation = Prisma.EmployeeGetPayload<{ include: { compensation: true } }>;
+import { toDate, toEmployee } from './employee.mapper.js';
 
 /** The PostgreSQL implementation. Reads and writes only, no business rules. */
 export class PrismaEmployeeRepository implements EmployeeRepository {
@@ -122,11 +121,6 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
   }
 }
 
-/** "2021-04-12" as a UTC midnight date, which PostgreSQL stores in a DATE column as-is. */
-function toDate(isoDate: string): Date {
-  return new Date(`${isoDate}T00:00:00.000Z`);
-}
-
 /**
  * Turns a PostgreSQL "unique constraint" failure into a ConflictError that names the
  * field. Returns undefined for any other error, which the caller rethrows unchanged.
@@ -156,32 +150,4 @@ function violatedIndex(error: Prisma.PrismaClientKnownRequestError): string | un
     error.meta?.['driverAdapterError'] as { cause?: { constraint?: { index?: string } } }
   )?.cause;
   return cause?.constraint?.index;
-}
-
-function toEmployee(row: EmployeeWithCompensation): Employee {
-  if (!row.compensation) {
-    // Every employee is created together with a salary, so this means the data is damaged.
-    throw new Error(`Employee ${row.id} has no compensation row.`);
-  }
-
-  return {
-    id: row.id,
-    employeeCode: row.employeeCode,
-    fullName: row.fullName,
-    email: row.email,
-    department: row.department,
-    jobTitle: row.jobTitle,
-    // The database CHECK constraint guarantees one of L1 to L6.
-    level: row.level as Level,
-    country: row.country,
-    employmentStatus: row.employmentStatus as EmploymentStatus,
-    hireDate: row.hireDate.toISOString().slice(0, 10),
-    compensation: {
-      amount: row.compensation.amount.toFixed(2),
-      currency: row.compensation.currency,
-      effectiveDate: row.compensation.effectiveDate.toISOString().slice(0, 10),
-    },
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
 }

@@ -53,7 +53,14 @@ export default defineConfig(
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
     },
+  },
+
+  // The seed command prints its progress to the terminal.
+  {
+    files: ['api/prisma/seed.ts'],
+    rules: { 'no-console': 'off' },
   },
 
   {

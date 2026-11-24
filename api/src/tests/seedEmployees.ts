@@ -150,3 +150,19 @@ export const SAMPLE_EMPLOYEES: SeedEmployee[] = [
     currency: 'USD',
   },
 ];
+
+/** One test employee with sensible defaults. Override only what a test cares about. */
+export function aSeedEmployee(id: number, overrides: Partial<SeedEmployee> = {}): SeedEmployee {
+  return {
+    id,
+    fullName: `Person ${id}`,
+    email: `person${id}@acme.example`,
+    department: 'Engineering',
+    level: 'L1',
+    country: 'US',
+    hireDate: '2020-01-01',
+    amount: '100.00',
+    currency: 'USD',
+    ...overrides,
+  };
+}

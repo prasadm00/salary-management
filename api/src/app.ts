@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
+import { join } from 'node:path';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { requestId } from './middleware/requestId.js';
@@ -24,6 +25,23 @@ export interface AppDependencies extends HealthDependencies {
   employeeQueryService: EmployeeQueryService;
   metaService: MetaService;
   analyticsService: AnalyticsService;
+  /** Folder with the built web app. When set, the API serves the UI too, so one address does both. */
+  webDir?: string | undefined;
+}
+
+/** Serves the built web app: its files, and index.html for any page address the React app handles itself. */
+function serveWebApp(app: Express, webDir: string): void {
+  app.use(express.static(webDir));
+  app.use((req, res, next) => {
+    // Unknown /api paths must still get the JSON "not found" answer, not the web page.
+    if (req.method !== 'GET' || req.path.startsWith('/api')) {
+      next();
+      return;
+    }
+    res.sendFile(join(webDir, 'index.html'), (error) => {
+      if (error) next();
+    });
+  });
 }
 
 /**
@@ -49,6 +67,10 @@ export function createApp(dependencies: AppDependencies): Express {
   app.use('/api/employees', createCompensationRouter(dependencies.compensationService));
   app.use('/api/meta', createMetaRouter(dependencies.metaService));
   app.use('/api/analytics', createAnalyticsRouter(dependencies.analyticsService));
+
+  if (dependencies.webDir) {
+    serveWebApp(app, dependencies.webDir);
+  }
 
   // Order matters: unknown routes next, and the error handler must be last.
   app.use(notFoundHandler);

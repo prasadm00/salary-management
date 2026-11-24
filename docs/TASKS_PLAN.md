@@ -184,14 +184,14 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 ---
 
 ## Phase 8. Documentation (parallel with everything, finish here)
-- [ ] **8.1** `README.md`: what it is, live URL, demo video link, setup in five commands, test commands, folder map
-- [ ] **8.2** `docs/DESIGN.md` final: diagrams match the built system
-- [ ] **8.3** `docs/API.md` final
-- [ ] **8.4** `docs/PERFORMANCE.md` final
-- [ ] **8.5** `docs/DECISIONS.md` final, with trade-offs and what I'd do next
-- [ ] **8.6** `AI_USAGE.md` final: tools used, example prompts, what AI got wrong, what I changed
-- [ ] **8.7** `docs/prompts/`: key prompts saved as files
-- [ ] **8.8** `docs/DEPLOYMENT.md`: step-by-step so anyone can redeploy
+- [x] **8.1** `README.md`: what it is, live URL, demo video link, setup in five commands, test commands, folder map
+- [x] **8.2** `docs/DESIGN.md` final: diagrams match the built system
+- [x] **8.3** `docs/API.md` final
+- [x] **8.4** `docs/PERFORMANCE.md` final
+- [x] **8.5** `docs/DECISIONS.md` final, with trade-offs and what I'd do next
+- [x] **8.6** `AI_USAGE.md` final: tools used, example prompts, what AI got wrong, what I changed
+- [x] **8.7** `docs/prompts/`: key prompts saved as files
+- [x] **8.8** `docs/DEPLOYMENT.md`: step-by-step so anyone can redeploy
 
 ---
 
@@ -199,8 +199,8 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 **Branch:** `chore/deploy`
 
 - [ ] **9.1** Create Neon project, copy the connection string
-- [ ] **9.2** Express serves the built UI as static files, with SPA fallback
-- [ ] **9.3** `render.yaml` or manual Render web service: build, migrate, start commands, environment variables
+- [x] **9.2** Express serves the built UI as static files, with SPA fallback
+- [x] **9.3** `render.yaml` or manual Render web service: build, migrate, start commands, environment variables
 - [ ] **9.4** Run migrations and the seed against Neon from the local machine
 - [ ] **9.5** Verify live: health, list, search, salary edit, dashboard
 - [ ] **9.6** Free uptime pinger on `/api/health` and a README note about a slow first load
@@ -223,8 +223,7 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
   - [ ] AI usage and prompts included
   - [ ] No secrets or real personal data in the repo
   - [ ] Token used earlier is revoked
-- [ ] **10.4** Reply to the email with the repo link, live URL, video link, and a short summary
-- [ ] **10.5** Interview prep: be ready to explain the money handling, currency decision, pagination approach, index choices, transaction for history, and what you'd improve next
+- [ ] **10.4** Share the repo link, live URL, video link, and a short summary
 
 ---
 

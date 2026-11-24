@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { createServices } from './composition.js';
 import { loadEnv } from './config/env.js';
@@ -9,9 +11,13 @@ function main(): void {
   const env = loadEnv();
   const prisma = createPrismaClient(env.DATABASE_URL);
 
+  // After `npm run build`, the web app is in web/dist and this server serves it too.
+  const webDir = fileURLToPath(new URL('../../web/dist', import.meta.url));
+
   const app = createApp({
     checkDatabase: () => checkDatabase(prisma),
     corsOrigin: env.CORS_ORIGIN,
+    webDir: existsSync(webDir) ? webDir : undefined,
     ...createServices(prisma, systemClock),
   });
 

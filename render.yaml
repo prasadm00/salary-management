@@ -1,0 +1,20 @@
+# One web service: the API and the built web app on the same address.
+# The database is a free Neon PostgreSQL. Its address is entered by hand in the Render dashboard.
+services:
+  - type: web
+    name: salary-management
+    runtime: node
+    plan: free
+    region: oregon
+    # --include=dev: the build needs Vite, and the server runs through tsx and Prisma.
+    buildCommand: npm ci --include=dev && npm run db:generate -w api && npm run build
+    # Migrations are applied at every start. They are safe to repeat.
+    startCommand: npm run db:deploy -w api && npm start -w api
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false

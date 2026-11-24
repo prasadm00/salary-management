@@ -13,3 +13,5 @@ coverage/
 .idea/
 
 .history
+# Generated Prisma client (run: npm run db:generate -w api)
+api/src/generated/

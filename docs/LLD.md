@@ -25,7 +25,7 @@ erDiagram
     EMPLOYEES ||--o{ COMPENSATION_CHANGES : "has history of"
 
     EMPLOYEES {
-        bigint id PK
+        int id PK
         varchar employee_code UK "e.g. EMP-000001"
         varchar full_name
         varchar email UK
@@ -40,7 +40,7 @@ erDiagram
     }
 
     COMPENSATIONS {
-        bigint employee_id PK, FK "one row per employee"
+        int employee_id PK, FK "one row per employee"
         numeric amount "NUMERIC(14,2), annual base"
         char currency "ISO 4217"
         date effective_date
@@ -48,8 +48,8 @@ erDiagram
     }
 
     COMPENSATION_CHANGES {
-        bigint id PK
-        bigint employee_id FK
+        int id PK
+        int employee_id FK
         numeric old_amount "NULL for the first salary"
         numeric new_amount "NUMERIC(14,2)"
         char currency "ISO 4217"
@@ -67,7 +67,7 @@ Who the person is. Contains no pay data.
 
 | Column | Type | Null | Rule | Notes |
 | --- | --- | --- | --- | --- |
-| `id` | `BIGINT` identity | no | Primary key | Internal id used in URLs and joins |
+| `id` | `INTEGER` identity | no | Primary key | Internal id used in URLs and joins |
 | `employee_code` | `VARCHAR(20)` | no | Unique | Human-friendly code, for example `EMP-000001` |
 | `full_name` | `VARCHAR(120)` | no | Not blank | Searchable |
 | `email` | `VARCHAR(160)` | no | Unique, stored lower-case | Searchable |
@@ -85,7 +85,7 @@ The current salary. Exactly one row per employee.
 
 | Column | Type | Null | Rule | Notes |
 | --- | --- | --- | --- | --- |
-| `employee_id` | `BIGINT` | no | Primary key and foreign key to `employees(id)`, `ON DELETE RESTRICT` | The primary key guarantees one row per employee |
+| `employee_id` | `INTEGER` | no | Primary key and foreign key to `employees(id)`, `ON DELETE RESTRICT` | The primary key guarantees one row per employee |
 | `amount` | `NUMERIC(14,2)` | no | `CHECK (amount > 0)` | Annual base salary in local currency. Exact, never floating point |
 | `currency` | `CHAR(3)` | no | `CHECK (currency ~ '^[A-Z]{3}$')` | Must match the employee's country (enforced in code) |
 | `effective_date` | `DATE` | no | | Date the current amount took effect |
@@ -96,8 +96,8 @@ Append-only history. One row for the first salary and one row per later change.
 
 | Column | Type | Null | Rule | Notes |
 | --- | --- | --- | --- | --- |
-| `id` | `BIGINT` identity | no | Primary key | |
-| `employee_id` | `BIGINT` | no | Foreign key to `employees(id)`, `ON DELETE RESTRICT` | |
+| `id` | `INTEGER` identity | no | Primary key | |
+| `employee_id` | `INTEGER` | no | Foreign key to `employees(id)`, `ON DELETE RESTRICT` | |
 | `old_amount` | `NUMERIC(14,2)` | **yes** | `CHECK (old_amount IS NULL OR old_amount > 0)` | `NULL` marks the starting salary (US-08 AC3) |
 | `new_amount` | `NUMERIC(14,2)` | no | `CHECK (new_amount > 0)` | |
 | `currency` | `CHAR(3)` | no | Format check as above | Stored on the row so history stays correct even if rules change |
@@ -117,7 +117,7 @@ History rows are never updated or deleted. The application has no code path that
 | Text `level` (`L1` to `L6`) with a `CHECK` | Simple, readable in the UI, no extra table | Lookup table (more joins for six fixed values) |
 | `department`, `job_title` as plain text | Free to grow, and the filter list comes from `SELECT DISTINCT` | Lookup tables (extra CRUD screens we do not need) |
 | `ON DELETE RESTRICT` everywhere | Pay history must not be lost by accident | `CASCADE` |
-| Internal `BIGINT` id plus public `employee_code` | Stable joins, readable code for HR | UUID (larger indexes, no benefit here) |
+| Internal `INTEGER` id plus public `employee_code` | Stable joins, readable code for HR. A 4-byte integer holds over 2 billion rows, far more than needed, and Prisma returns it as a plain JSON number (a `BIGINT` would arrive as a JavaScript `bigint`, which JSON cannot carry). | `BIGINT` (needs conversion everywhere), UUID (larger indexes, no benefit here) |
 | Status as `ACTIVE`/`INACTIVE` text with a `CHECK` | Easy to read and filter | Boolean (cannot grow to more statuses such as ON_LEAVE) |
 | USD rates in code, not a table | Fixed, dated, reviewed in a pull request, no admin screen needed | `fx_rates` table (needs seeding and an editor for no real gain) |
 

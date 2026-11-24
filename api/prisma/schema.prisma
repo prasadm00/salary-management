@@ -1,0 +1,82 @@
+// Data model for ACME salary management. See docs/LLD.md section 1 for the reasoning.
+//
+// Things Prisma cannot express are added by hand in the migration SQL:
+//   - CHECK constraints (positive amounts, valid level/status/country format)
+//   - the pg_trgm extension (used by the name and email search indexes)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Who the person is. Holds no pay data.
+model Employee {
+  id               Int      @id @default(autoincrement())
+  /// Human-friendly code such as EMP-000001.
+  employeeCode     String   @unique @map("employee_code") @db.VarChar(20)
+  fullName         String   @map("full_name") @db.VarChar(120)
+  /// Stored in lower case.
+  email            String   @unique @db.VarChar(160)
+  department       String   @db.VarChar(60)
+  jobTitle         String   @map("job_title") @db.VarChar(80)
+  /// L1 to L6 (checked by the database).
+  level            String   @db.VarChar(2)
+  /// ISO 3166-1 alpha-2, for example IN.
+  country          String   @db.Char(2)
+  /// ACTIVE or INACTIVE (checked by the database). Employees are deactivated, never deleted.
+  employmentStatus String   @default("ACTIVE") @map("employment_status") @db.VarChar(10)
+  hireDate         DateTime @map("hire_date") @db.Date
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  compensation Compensation?
+  changes      CompensationChange[]
+
+  @@index([country], map: "idx_employees_country")
+  @@index([department], map: "idx_employees_department")
+  @@index([level], map: "idx_employees_level")
+  @@index([country, department], map: "idx_employees_country_department")
+  @@index([employmentStatus], map: "idx_employees_status")
+  @@index([hireDate], map: "idx_employees_hire_date")
+  @@index([fullName(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_employees_full_name_trgm")
+  @@index([email(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_employees_email_trgm")
+  @@map("employees")
+}
+
+/// The current salary. Exactly one row per employee (the primary key is the employee id).
+model Compensation {
+  employeeId    Int      @id @map("employee_id")
+  /// Annual base salary in local currency. Exact decimal, never floating point.
+  amount        Decimal  @db.Decimal(14, 2)
+  /// ISO 4217, for example INR. Must match the employee's country (checked in code).
+  currency      String   @db.Char(3)
+  effectiveDate DateTime @map("effective_date") @db.Date
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([currency, amount], map: "idx_compensations_currency_amount")
+  @@map("compensations")
+}
+
+/// Append-only salary history. One row for the first salary, one per later change.
+model CompensationChange {
+  id         Int      @id @default(autoincrement())
+  employeeId Int      @map("employee_id")
+  /// Null marks the starting salary.
+  oldAmount  Decimal? @map("old_amount") @db.Decimal(14, 2)
+  newAmount  Decimal  @map("new_amount") @db.Decimal(14, 2)
+  currency   String   @db.Char(3)
+  reason     String   @db.VarChar(255)
+  changedAt  DateTime @default(now()) @map("changed_at") @db.Timestamptz(6)
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId, changedAt(sort: Desc)], map: "idx_changes_employee_changed_at")
+  @@index([changedAt(sort: Desc)], map: "idx_changes_changed_at")
+  @@map("compensation_changes")
+}

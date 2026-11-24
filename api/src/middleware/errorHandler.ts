@@ -48,10 +48,17 @@ function toAppError(error: unknown): AppError | undefined {
 }
 
 function fromZod(error: ZodError): ValidationError {
-  const details: FieldDetail[] = error.issues.map((issue) => ({
-    field: issue.path.join('.'),
-    message: issue.message,
-  }));
+  const details = error.issues.flatMap((issue): FieldDetail[] => {
+    // An unknown field is reported by its own name, one entry per field.
+    if (issue.code === 'unrecognized_keys') {
+      return issue.keys.map((key) => ({
+        field: [...issue.path, key].join('.'),
+        message: 'This field is not allowed.',
+      }));
+    }
+    // A problem with the whole body has no field name.
+    return [{ field: issue.path.join('.') || 'body', message: issue.message }];
+  });
   return new ValidationError('Some fields are invalid.', details);
 }
 

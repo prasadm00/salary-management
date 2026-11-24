@@ -2,6 +2,7 @@ import express, { type Express } from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
+import { unusedServices } from '../tests/stubs.js';
 import { createApp } from '../app.js';
 import {
   BusinessRuleError,
@@ -53,6 +54,29 @@ describe('error handling', () => {
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
     const fields = response.body.error.details.map((detail: { field: string }) => detail.field);
     expect(fields).toEqual(['email', 'age']);
+  });
+
+  it('names each unknown field instead of leaving the field blank', async () => {
+    const schema = z.strictObject({ name: z.string() });
+    const zodError = schema.safeParse({ name: 'x', currency: 'USD', code: 'Y' }).error;
+
+    const response = await request(appThatThrows(zodError)).get('/boom');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.details).toEqual([
+      { field: 'currency', message: 'This field is not allowed.' },
+      { field: 'code', message: 'This field is not allowed.' },
+    ]);
+  });
+
+  it('calls the field "body" when the whole body has the wrong shape', async () => {
+    const zodError = z.strictObject({ name: z.string() }).safeParse([]).error;
+
+    const response = await request(appThatThrows(zodError)).get('/boom');
+
+    expect(response.body.error.details).toEqual([
+      { field: 'body', message: expect.stringContaining('expected object') },
+    ]);
   });
 
   it('turns a NotFoundError into 404', async () => {
@@ -151,7 +175,7 @@ describe('error handling', () => {
 });
 
 describe('the real app', () => {
-  const app = createApp({ checkDatabase: () => Promise.resolve(true) });
+  const app = createApp({ ...unusedServices, checkDatabase: () => Promise.resolve(true) });
 
   it('returns the standard 404 body for an unknown route', async () => {
     const response = await request(app).get('/api/nothing-here');

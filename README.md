@@ -21,15 +21,29 @@ Web software for an HR manager to manage salaries for 10,000 employees across co
 ## Local setup (will be completed as the code lands)
 ```bash
 cp .env.example .env
-docker compose up -d      # local PostgreSQL
+docker compose up -d         # local PostgreSQL (or use any PostgreSQL 14+ you already run)
 npm install
-npm run check             # lint, format check, type-check, tests
+npm run db:generate -w api   # generate the Prisma client
+npm run db:migrate -w api    # create the tables in salary_management
+npm run check                # lint, format check, type-check, tests
+npm run dev -w api           # API on http://localhost:4000
 ```
+
+**Using your own PostgreSQL instead of Docker.** Create the role and two databases once:
+
+```sql
+CREATE ROLE acme LOGIN PASSWORD 'acme' CREATEDB;
+CREATE DATABASE salary_management OWNER acme;
+CREATE DATABASE salary_management_test OWNER acme;   -- the tests wipe this one
+```
+
+The tests apply migrations to `salary_management_test` themselves. They refuse to run against any database whose name does not end in `_test`.
 
 | Command | What it does |
 | --- | --- |
 | `npm run lint` / `npm run lint:fix` | ESLint (strict, type-aware) |
 | `npm run format` / `npm run format:check` | Prettier |
+| `npm run db:generate -w api`, `db:migrate`, `db:deploy` | Generate the Prisma client, create a migration, apply migrations |
 | `npm run typecheck` | `tsc --noEmit` in every workspace (strict mode) |
 | `npm test` | Vitest in every workspace |
 | `npm run test:coverage` | Tests with a coverage summary |

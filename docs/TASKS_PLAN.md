@@ -109,11 +109,11 @@ All diagrams use Mermaid so they render on GitHub. Put them in `docs/DESIGN.md` 
 Every item follows red, green, refactor. Each is its own branch, merged with `--no-ff`.
 
 ### 5A. Foundation. Branch `feat/api-foundation`
-- [ ] **5A.1** Express app, `app.ts` (no listen) and `server.ts`. Test: `GET /api/health` returns 200.
-- [ ] **5A.2** Env config with Zod. Test: missing `DATABASE_URL` throws a clear error.
-- [ ] **5A.3** Error-handling middleware with the standard error shape. Tests: validation error gives 400, unknown route gives 404, unexpected error gives 500 without leaking details.
-- [ ] **5A.4** Prisma schema and first migration from Phase 3.1. Commit: `feat(api): add prisma schema and initial migration`
-- [ ] **5A.5** Test database helper (separate DB or transaction per test). Done when tests run fast and independently.
+- [x] **5A.1** Express app, `app.ts` (no listen) and `server.ts`. Test: `GET /api/health` returns 200.
+- [x] **5A.2** Env config with Zod. Test: missing `DATABASE_URL` throws a clear error.
+- [x] **5A.3** Error-handling middleware with the standard error shape. Tests: validation error gives 400, unknown route gives 404, unexpected error gives 500 without leaking details.
+- [x] **5A.4** Prisma schema and first migration from Phase 3.1. Commit: `feat(api): add prisma schema and initial migration`
+- [x] **5A.5** Test database helper (separate DB or transaction per test). Done when tests run fast and independently.
 
 ### 5B. Money and domain rules. Branch `feat/domain-money`
 - [ ] **5B.1** `Money` value object. Tests: rejects negative and zero, rejects more than two decimals, no floating-point drift, formats with currency.

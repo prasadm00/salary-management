@@ -6,7 +6,14 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig(
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '.history/**', '.husky/_/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      '**/generated/**',
+      '.history/**',
+      '.husky/_/**',
+    ],
   },
 
   js.configs.recommended,
@@ -35,6 +42,16 @@ export default defineConfig(
           message: 'Do not commit focused or skipped tests.',
         },
       ],
+    },
+  },
+
+  // HTTP tests read `response.body`, which supertest types as `any`.
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
     },
   },
 

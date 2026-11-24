@@ -130,14 +130,14 @@ Each index exists because a named query needs it.
 | `employees_pkey` | `id` | Profile lookup, joins |
 | `employees_employee_code_key` (unique) | `employee_code` | Search by exact code, duplicate protection |
 | `employees_email_key` (unique) | `email` | Duplicate protection, search by email |
-| `idx_employees_country` | `country` | Country filter, statistics by country |
 | `idx_employees_department` | `department` | Department filter, statistics |
 | `idx_employees_level` | `level` | Level filter, statistics |
-| `idx_employees_country_department` | `country, department` | The most common combined filter and grouping |
+| `idx_employees_country_department` | `country, department` | Filter by country, or by country and department. There is no separate country index, because this one also serves a country-only filter |
 | `idx_employees_status` | `employment_status` | Active/inactive filter and default "active only" |
 | `idx_employees_hire_date` | `hire_date` | Sort by hire date |
 | `idx_employees_full_name_trgm` (GIN, `pg_trgm`) | `full_name gin_trgm_ops` | Case-insensitive "contains" search on name |
 | `idx_employees_email_trgm` (GIN, `pg_trgm`) | `email gin_trgm_ops` | "Contains" search on email |
+| `idx_employees_code_trgm` (GIN, `pg_trgm`) | `employee_code gin_trgm_ops` | "Contains" search on employee code. Needed so the search can use indexes on all three columns |
 | `compensations_pkey` | `employee_id` | Join from employees |
 | `idx_compensations_currency_amount` | `currency, amount` | Statistics per currency, sort by salary, top and bottom paid |
 | `idx_changes_employee_changed_at` | `employee_id, changed_at DESC` | History for one employee, newest first |
@@ -147,7 +147,7 @@ Each index exists because a named query needs it.
 - A plain index cannot speed up `ILIKE '%text%'`. The trigram (`pg_trgm`) indexes can. Prisma cannot express them, so they go in a hand-written SQL migration that also runs `CREATE EXTENSION IF NOT EXISTS pg_trgm`. Neon supports this extension.
 - Every list query ends with `ORDER BY <chosen column>, id`. The `id` tie-breaker keeps paging stable (US-04 AC4).
 - We use offset paging. At 10,000 rows with a 100-row cap it is fast enough and simple. Keyset paging is a noted future improvement.
-- Index choices are checked with `EXPLAIN ANALYZE` in Phase 5G and the results go in `docs/PERFORMANCE.md`. An index that shows no benefit is removed.
+- Index choices were checked with `EXPLAIN ANALYZE` in task 5G, and the results are in `docs/PERFORMANCE.md`. That review added the employee code search index and removed the separate country index, which showed no benefit.
 
 ### 1.5 Reference data kept in code
 

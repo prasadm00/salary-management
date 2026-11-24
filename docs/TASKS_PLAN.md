@@ -149,9 +149,9 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 - [x] **5F.4** Measure seed time and record it in `docs/PERFORMANCE.md`
 
 ### 5G. Performance. Branch `chore/performance`
-- [ ] **5G.1** Add indexes from Phase 3.1
-- [ ] **5G.2** Run `EXPLAIN ANALYZE` on list and analytics queries. Save before and after results.
-- [ ] **5G.3** Record results and the 300 ms target check in `docs/PERFORMANCE.md`
+- [x] **5G.1** Add indexes from Phase 3.1
+- [x] **5G.2** Run `EXPLAIN ANALYZE` on list and analytics queries. Save before and after results.
+- [x] **5G.3** Record results and the 300 ms target check in `docs/PERFORMANCE.md`
 
 ---
 

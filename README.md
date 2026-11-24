@@ -3,7 +3,7 @@
 A web app for an HR manager to manage the salaries of 10,000 employees across 10 countries, and to answer
 "how does the organisation pay people?" without spreadsheets.
 
-> **Live app:** _to be added after deployment_ · **Demo video:** _to be added_ · The free server may take up to a minute to wake up on the first visit.
+> **Live app:** _(Phase 9: will be deployed to Render + Neon)_ · **Demo video:** _(Phase 10: will be recorded)_
 
 ![Dashboard](docs/screenshots/dashboard.png)
 

@@ -65,7 +65,7 @@ Salary amounts are stored as exact decimal values, not floating-point numbers. C
 
 ## 7. Currency and salary assumptions
 
-Until the assessment contact clarifies otherwise, assume compensation means **base salary**, store the amount in the employee’s **local currency**, and show comparisons grouped by currency. If pay frequency is supported, convert monthly or hourly values to an annualized figure only when the required hours-per-week or pay-period assumptions are explicitly defined. Do not invent exchange rates or present a cross-currency average as meaningful.
+Until the product owner clarifies otherwise, assume compensation means **base salary**, store the amount in the employee’s **local currency**, and show comparisons grouped by currency. If pay frequency is supported, convert monthly or hourly values to an annualized figure only when the required hours-per-week or pay-period assumptions are explicitly defined. Do not invent exchange rates or present a cross-currency average as meaningful.
 
 ## 8. API outline
 
@@ -91,7 +91,7 @@ List endpoints use bounded page sizes and validated filter/sort parameters. API 
 
 - Payroll processing, bank transfers, tax calculation, benefits, and country-specific legal compliance: these need specialized integrations and jurisdiction-specific rules.
 - Login and user accounts (for now): the brief names one persona and does not ask for authentication. Adding it later is a contained change.
-- Real HRIS integrations, single sign-on, multiple permission tiers, and multi-tenant administration: unnecessary for the single-persona assessment demo.
+- Real HRIS integrations, single sign-on, multiple permission tiers, and multi-tenant administration: unnecessary for the single-persona demo.
 - Natural-language AI salary questions: reliable filters and explicit analytics are the core product; an AI layer would add complexity and could make sensitive compensation answers harder to validate.
 - Automatic foreign-exchange conversion: no source, date policy, or target currency was specified.
 

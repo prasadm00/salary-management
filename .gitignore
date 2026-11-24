@@ -18,3 +18,6 @@ api/src/generated/
 
 # Frontend build output
 web/dist/
+
+# Editor local-history snapshots
+.history/

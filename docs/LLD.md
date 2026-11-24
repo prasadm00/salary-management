@@ -457,7 +457,7 @@ Every rule has an ID, an owner, and the test that proves it. Rules are numbered 
 | R-05 | Amount fits `NUMERIC(14,2)` (12 digits before the point) | `Money.parse` | 400 | `rejects more than twelve whole digits` |
 | R-06 | The currency must match the employee's country | `currency.ts` | 400 | `accepts INR for IN` · `rejects USD for IN` · `accepts EUR for DE and FR` |
 | R-07 | A salary change must change the amount | `salaryChange.ts` | 422 | `rejects the same amount` · `treats 100 and 100.00 as the same` |
-| R-08 | A salary change needs a reason of 3 to 255 characters after trimming | Zod schema | 400 | `rejects a missing reason` · `rejects a blank reason` · `trims whitespace` |
+| R-08 | A salary change needs a reason of 3 to 255 characters after trimming | `salaryChange.ts` (the Zod schema only checks it is text) | 400 | `rejects a missing reason` · `rejects a blank reason` · `trims whitespace` |
 | R-09 | The currency of an existing salary cannot change | Service | 400 | `ignores or rejects a currency field` |
 | R-10 | A salary change and its history row are saved together or not at all | Service transaction | 500 | `rolls back the salary when the history insert fails` |
 | R-11 | The first salary creates a history row with `oldAmount` null and reason "Initial salary" | Service | n/a | `writes a starting history row on create` |
@@ -506,7 +506,10 @@ The nearest-rank quartiles (R-37) return a real amount from the data, also as ex
 | Member | Behaviour |
 | --- | --- |
 | `Money.parse(text)` | Accepts only `^\d{1,12}(\.\d{1,2})?$` and a value above zero. Throws `ValidationError` otherwise. |
-| `money.toString()` | Always two decimals, for example `"100.00"` |
+| `money.toString()` | Always two decimals, for example `"100.00"`. Rounds first, so it is safe to call on an unrounded result. |
+| `money.add(other)` | Exact sum, returns a new `Money` |
+| `money.format(currency)` | Text with the currency code, for example `"100.00 INR"` |
+| `money.toJSON()` | The two-decimal text, so an amount is never sent as a JSON number |
 | `money.equals(other)` | Compares exact values (`"100"` equals `"100.00"`) |
 | `money.convert(rate)` | Multiplies in full precision and does not round |
 | `money.round2()` | Rounds half away from zero to two decimals. The one place rounding happens. |

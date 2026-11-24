@@ -116,9 +116,9 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 - [x] **5A.5** Test database helper (separate DB or transaction per test). Done when tests run fast and independently.
 
 ### 5B. Money and domain rules. Branch `feat/domain-money`
-- [ ] **5B.1** `Money` value object. Tests: rejects negative and zero, rejects more than two decimals, no floating-point drift, formats with currency.
-- [ ] **5B.2** Currency and country mapping. Tests: valid pair accepted, mismatch rejected.
-- [ ] **5B.3** Salary change rule. Tests: same amount rejected, missing reason rejected.
+- [x] **5B.1** `Money` value object. Tests: rejects negative and zero, rejects more than two decimals, no floating-point drift, formats with currency.
+- [x] **5B.2** Currency and country mapping. Tests: valid pair accepted, mismatch rejected.
+- [x] **5B.3** Salary change rule. Tests: same amount rejected, missing reason rejected.
 
 ### 5C. Employees. Branch `feat/employees`
 - [ ] **5C.1** Create employee. Tests: valid input, duplicate code or email gives 409, bad input gives 400.

@@ -158,16 +158,16 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 ## Phase 6. Frontend
 **Branch per item.** Component tests focus on behaviour, not styling.
 
-- [ ] **6.1** Vite + React + TypeScript + Tailwind + shadcn/ui setup, app shell, navigation, routing (`feat/web-foundation`)
-- [ ] **6.2** Typed API client using shared types, React Query setup, shared error and loading components
-- [ ] **6.3** Employee directory (`feat/web-directory`): table with server-side paging, sort, filters, debounced search, URL-synced query params, empty and error states
-- [ ] **6.4** Employee detail page: profile, current compensation, history timeline
-- [ ] **6.5** Edit salary dialog: validation messages, reason field, success and error feedback
-- [ ] **6.6** Add employee form
-- [ ] **6.7** Dashboard (`feat/web-dashboard`): headcount cards, salary stats by country, department, level, distribution chart, a clear currency label on every number
-- [ ] **6.8** Accessibility pass: labels, focus order, keyboard use, contrast
-- [ ] **6.9** Responsive pass for laptop and tablet widths
-- [ ] **6.10** Frontend tests: filter changes call the API with the right params, salary form validation, dashboard renders currency groups
+- [x] **6.1** Vite + React + TypeScript + Tailwind + shadcn/ui setup, app shell, navigation, routing (`feat/web-foundation`)
+- [x] **6.2** Typed API client using shared types, React Query setup, shared error and loading components
+- [x] **6.3** Employee directory (`feat/web-directory`): table with server-side paging, sort, filters, debounced search, URL-synced query params, empty and error states
+- [x] **6.4** Employee detail page: profile, current compensation, history timeline
+- [x] **6.5** Edit salary dialog: validation messages, reason field, success and error feedback
+- [x] **6.6** Add employee form
+- [x] **6.7** Dashboard (`feat/web-dashboard`): headcount cards, salary stats by country, department, level, distribution chart, a clear currency label on every number
+- [x] **6.8** Accessibility pass: labels, focus order, keyboard use, contrast
+- [x] **6.9** Responsive pass for laptop and tablet widths
+- [x] **6.10** Frontend tests: filter changes call the API with the right params, salary form validation, dashboard renders currency groups
 
 ---
 

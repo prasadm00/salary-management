@@ -60,3 +60,6 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Build the web app
+        run: npm run build

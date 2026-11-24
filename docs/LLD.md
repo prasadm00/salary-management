@@ -696,6 +696,28 @@ Simple sketches, not final visuals.
 - Colour is never the only signal (status has text, not just a colour).
 - Every figure shows its currency. `MoneyText` is the only component that prints money.
 
+### 6.8 As built: where the frontend differs from the plan above
+
+The first version of this section was written before the code. These are the differences, and why.
+
+| Plan | As built | Why |
+| --- | --- | --- |
+| Forms with `react-hook-form` and the shared Zod schema | Plain React state, a few small check functions in `lib/validation.ts`, and the API's field messages shown next to the right field | Two forms do not need a form library. Fewer parts to explain. The server checks everything again anyway. |
+| shadcn `Select` for filters | Native `<select>` (shadcn "native-select") | Works with the keyboard and screen readers out of the box, and is simple to test. |
+| Separate `useDebouncedValue` hook | The search box waits 300 ms after the last key itself | It is the only place that needs it. |
+| "Sort by salary" in the table | Sorting by salary without choosing a currency compares in US dollars, and a note says so. With a currency chosen, amounts are compared directly. | The API refuses to compare different currencies by amount (rule R-32). The page makes the rule visible instead of showing an error. |
+| Wireframe: headcount cards and a "Countries / Departments / Currencies" row | A total card plus one card per currency in the local view | Shows where the people are paid without adding currencies together. |
+| Highest and lowest paid: 10 each | 5 each | Fits the screen better. The API still allows up to 25. |
+| Recent changes follow the filters | They do not, and the page says so | The API endpoint has no filters (US-14). |
+| `VITE_API_URL` | Not used | The browser calls `/api` on its own address. In development, Vite forwards it to port 4000. In production one server serves both. |
+| shadcn "new-york" style | shadcn "base-nova" style (Base UI parts) | It is what the shadcn tool creates today. The components are copied into `web/src/components/ui` and not edited by hand. |
+| Tables | Sideways-scrolling tables are a keyboard-reachable, labelled region (`ScrollableTable`) | Found by the accessibility checker: a scroll area that the keyboard cannot reach is a problem. |
+| Phones | The list hides Code, Level, Country and Hired on small screens, and shows the department under the name | Salary and name stay readable without side-scrolling. |
+
+**Checked in a real browser** (`docs/qa`): the axe accessibility checker passes on 11 page states, including colour contrast
+and phone width. The keyboard checks pass: sensible Tab order, a "skip to content" link, sorting with Enter, and the salary
+dialog keeps focus inside, closes with Escape and gives focus back. The test suite runs the same rules, except colour contrast.
+
 ---
 
 ## 7. Seed design
@@ -824,7 +846,7 @@ flowchart TB
 | --- | --- | --- | --- | --- |
 | **Unit** | Money, salary rules, currency conversion, services (with a fake repository), seed generator, formatting helpers | None | whole layer under 5 s | ~65% |
 | **API (HTTP + database)** | Routes, validation, status codes, SQL correctness (filters, paging, median, quartiles, buckets), transactions and rollback, unique constraints | Real PostgreSQL, test database | whole layer under 30 s | ~25% |
-| **Frontend component** | User-visible behaviour: filter calls the API with the right parameters, form errors show, currency is always labelled | None (mocked API with MSW) | under 20 s | ~10% |
+| **Frontend component** | User-visible behaviour: filter calls the API with the right parameters, form errors show, currency is always labelled | None (a fake `fetch` in `web/src/tests/testUtils.tsx`, so a test can see exactly what the page asked for) | under 20 s | ~10% |
 | **Manual smoke** | The deployed app works end to end | Production | n/a | once |
 
 Why a real database for the middle layer: the risky code is SQL (statistics, trigram search, transactions). A mocked database cannot catch a wrong median query.
@@ -844,7 +866,7 @@ Why a real database for the middle layer: the risky code is SQL (statistics, tri
 | Current date and time | An injected `Clock`. Tests pass a fixed date. |
 | Random values | No `Math.random` in code under test. The seed uses a seeded generator. |
 | Shared database state | Truncate before each test, one file at a time |
-| Network and timers | Frontend tests use a mock server and fake timers for debounce |
+| Network and timers | Frontend tests use a fake `fetch` and fake timers for the search delay |
 | Order dependence | Every test creates what it needs. No test reads another's data. |
 | Slow setup | Migrations once per run. Builders insert in a few statements. |
 

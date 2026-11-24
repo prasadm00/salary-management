@@ -9,6 +9,8 @@ import type { CompensationService } from './modules/compensation/compensation.se
 import { createEmployeeRouter } from './modules/employees/employee.routes.js';
 import type { EmployeeService } from './modules/employees/employee.service.js';
 import type { EmployeeQueryService } from './modules/employees/employeeQuery.service.js';
+import { createAnalyticsRouter } from './modules/analytics/analytics.routes.js';
+import type { AnalyticsService } from './modules/analytics/analytics.service.js';
 import { createMetaRouter } from './modules/meta/meta.routes.js';
 import type { MetaService } from './modules/meta/meta.service.js';
 import { createHealthRouter, type HealthDependencies } from './modules/health/health.routes.js';
@@ -21,6 +23,7 @@ export interface AppDependencies extends HealthDependencies {
   compensationService: CompensationService;
   employeeQueryService: EmployeeQueryService;
   metaService: MetaService;
+  analyticsService: AnalyticsService;
 }
 
 /**
@@ -45,6 +48,7 @@ export function createApp(dependencies: AppDependencies): Express {
   );
   app.use('/api/employees', createCompensationRouter(dependencies.compensationService));
   app.use('/api/meta', createMetaRouter(dependencies.metaService));
+  app.use('/api/analytics', createAnalyticsRouter(dependencies.analyticsService));
 
   // Order matters: unknown routes next, and the error handler must be last.
   app.use(notFoundHandler);

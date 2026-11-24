@@ -1,5 +1,6 @@
 import type { CompensationService } from '../modules/compensation/compensation.service.js';
 import type { EmployeeQueryService } from '../modules/employees/employeeQuery.service.js';
+import type { AnalyticsService } from '../modules/analytics/analytics.service.js';
 import type { MetaService } from '../modules/meta/meta.service.js';
 import type { EmployeeService } from '../modules/employees/employee.service.js';
 import type { Services } from '../composition.js';
@@ -13,4 +14,5 @@ export const unusedServices: Services = {
   compensationService: {} as unknown as CompensationService,
   employeeQueryService: {} as unknown as EmployeeQueryService,
   metaService: {} as unknown as MetaService,
+  analyticsService: {} as unknown as AnalyticsService,
 };

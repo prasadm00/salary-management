@@ -3,6 +3,8 @@ import type { PrismaClient } from './db/prisma.js';
 import { CompensationService } from './modules/compensation/compensation.service.js';
 import { EmployeeService } from './modules/employees/employee.service.js';
 import { EmployeeQueryService } from './modules/employees/employeeQuery.service.js';
+import { AnalyticsService } from './modules/analytics/analytics.service.js';
+import { PrismaAnalyticsRepository } from './modules/analytics/prismaAnalyticsRepository.js';
 import { MetaService } from './modules/meta/meta.service.js';
 import { PrismaEmployeeQueryRepository } from './modules/employees/prismaEmployeeQueryRepository.js';
 import { PrismaEmployeeRepository } from './modules/employees/prismaEmployeeRepository.js';
@@ -17,6 +19,7 @@ export function createServices(prisma: PrismaClient, clock: Clock) {
     compensationService: new CompensationService(repository, clock),
     employeeQueryService: new EmployeeQueryService(queryRepository),
     metaService: new MetaService(queryRepository),
+    analyticsService: new AnalyticsService(new PrismaAnalyticsRepository(prisma)),
   };
 }
 

@@ -36,6 +36,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.20.5",
     "@vitest/coverage-v8": "^5.1.1",
+    "effect": "^3.22.5",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.14.0",
@@ -45,5 +46,8 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.74.0",
     "vitest": "^5.1.1"
+  },
+  "overrides": {
+    "effect": "$effect"
   }
 }

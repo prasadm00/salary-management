@@ -26,7 +26,7 @@ A web app for an HR manager to manage the salaries of 10,000 employees across 10
 | [Requirements](docs/REQUIREMENTS.md) | The goal, what is in scope, and what was left out and why |
 | [User stories](docs/USER_STORIES.md) | What the HR manager can do, with acceptance criteria |
 | [Design](docs/DESIGN.md) and [Low-level design](docs/LLD.md) | Diagrams, data model, rules, how each part works |
-| [API](docs/API.md) | Every endpoint, with examples |
+| [API](docs/API.md) | Every endpoint. Live Swagger page at `/api/docs`, with a Postman collection to download |
 | [Decisions](docs/DECISIONS.md) | Why PostgreSQL, why no login, the currency policy, and more |
 | [Performance](docs/PERFORMANCE.md) | Measured response times and the index review |
 | [Quality report](docs/QUALITY.md) | Coverage, security review and the end-to-end smoke test |

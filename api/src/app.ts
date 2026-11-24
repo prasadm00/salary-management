@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { join } from 'node:path';
+import { createDocsRouter } from './docs/docs.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { requestId } from './middleware/requestId.js';
@@ -59,6 +60,7 @@ export function createApp(dependencies: AppDependencies): Express {
   }
   app.use(express.json({ limit: '100kb' }));
 
+  app.use('/api', createDocsRouter());
   app.use('/api/health', createHealthRouter(dependencies));
   app.use(
     '/api/employees',

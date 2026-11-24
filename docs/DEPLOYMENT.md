@@ -28,6 +28,7 @@ Migrations are applied automatically at each start.
 
 ## 4. Check it
 Open the Render address. Check the dashboard, a search, and a salary change.
+Open `/api/docs` for the Swagger page, where every call can be tried. The Postman collection is at `/api/docs/postman-collection.json`.
 Or run `APP_URL=https://<your-app>.onrender.com node docs/qa/smoke.mjs` (see `docs/qa/README.md`).
 The smoke test changes one salary, so reseed afterwards (step 2).
 

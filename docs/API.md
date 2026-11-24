@@ -1,239 +1,46 @@
-# API Reference
+# API
 
-Base URL: `/api` (or the full URL in production)
+The API is described once, in `api/src/docs/openapi.ts`. Everything below comes from that file, and a test calls every
+endpoint to make sure the description matches the real API.
 
-All endpoints return JSON. Errors include a `code` and `message`. Successful responses have the data or a 2xx status.
+## Try it
 
-## Health check
+| What | Address |
+| --- | --- |
+| **Swagger page**: read every endpoint and try it from the browser | `/api/docs` |
+| **OpenAPI file**: for Postman, code generators and other tools | `/api/openapi.json` |
+| **Postman collection**: one click download, already points at this server | `/api/docs/postman-collection.json` |
 
-```
-GET /health
-```
-Returns `{ ok: true }`. Used by the uptime monitor.
+Locally that is `http://localhost:4000/api/docs`. After deployment, use your Render address instead.
 
-## Employees
+**Postman:** download the collection, then in Postman choose **Import** and pick the file. Every request is ready, with
+example bodies and an `id` value. Optional filters are switched off, so tick the ones you want. To call another server,
+change the `baseUrl` collection variable. Postman can also import `/api/openapi.json` directly through **Import > Link**.
 
-### List
-```
-GET /employees?search=rao&country=IN&department=Engineering&level=L3&status=ACTIVE&currency=INR&sortBy=salary&sortDir=asc&page=1&pageSize=25
-```
-Query parameters (all optional):
-- `search`: substring of full name, email or code (not case-sensitive, wildcards are literal)
-- `country`: exact match
-- `department`: exact match
-- `level`: exact match
-- `status`: `ACTIVE` or `INACTIVE`
-- `currency`: exact match
-- `sortBy`: `employeeCode`, `fullName`, `department`, `level`, `country`, `hireDate`, `salary` (default: `employeeCode`)
-- `sortDir`: `asc` or `desc` (default: `asc`)
-- `page`: 1-based (default: 1)
-- `pageSize`: 1 to 100 (default: 25)
+## Endpoints
 
-Returns:
-```json
-{
-  "employees": [
-    {
-      "id": 1,
-      "employeeCode": "EMP-00001",
-      "fullName": "Emma Brown",
-      "email": "emma@acme.example",
-      "department": "Engineering",
-      "jobTitle": "Senior Engineer",
-      "level": "L3",
-      "country": "United States",
-      "employmentStatus": "ACTIVE",
-      "hireDate": "2020-05-30",
-      "salary": "105500.00",
-      "currency": "USD"
-    }
-  ],
-  "total": 10000,
-  "page": 1,
-  "pageSize": 25
-}
-```
+| Method and path | What it does |
+| --- | --- |
+| `GET /api/health` | Is the service and its database up |
+| `GET /api/meta/filters` | Values for the filter lists (countries with currency, departments, levels) |
+| `GET /api/employees` | Search, filter, sort and page through employees |
+| `POST /api/employees` | Add an employee (currency comes from the country) |
+| `GET /api/employees/{id}` | One employee with the current salary |
+| `PATCH /api/employees/{id}/status` | Mark active or inactive |
+| `PATCH /api/employees/{id}/compensation` | Change the salary, with a reason |
+| `GET /api/employees/{id}/compensation-history` | Salary changes for one employee, newest first |
+| `GET /api/analytics/summary` | Headcount and statistics, one group per currency |
+| `GET /api/analytics/by-country`, `by-department`, `by-level` | Statistics for each group |
+| `GET /api/analytics/distribution` | Salary histogram |
+| `GET /api/analytics/extremes` | Highest and lowest paid |
+| `GET /api/analytics/recent-changes` | Latest salary changes across all employees |
 
-### Get one
-```
-GET /employees/:id
-```
-Returns the employee, compensation history, and the most recent 10 salary changes.
-```json
-{
-  "id": 1,
-  "employeeCode": "EMP-00001",
-  "fullName": "Emma Brown",
-  "email": "emma@acme.example",
-  "department": "Engineering",
-  "jobTitle": "Senior Engineer",
-  "level": "L3",
-  "country": "United States",
-  "employmentStatus": "ACTIVE",
-  "hireDate": "2020-05-30",
-  "compensation": {
-    "id": 100,
-    "amount": "105500.00",
-    "currency": "USD",
-    "effectiveAt": "2023-08-16"
-  },
-  "history": [
-    {
-      "id": 200,
-      "previousAmount": "102400.00",
-      "newAmount": "105500.00",
-      "reason": "Promotion",
-      "effectiveAt": "2023-08-16",
-      "createdAt": "2023-08-16T14:30:00Z"
-    }
-  ]
-}
-```
-
-### Create
-```
-POST /employees
-Content-Type: application/json
-
-{
-  "fullName": "Alice Smith",
-  "email": "alice@acme.example",
-  "department": "Sales",
-  "jobTitle": "Account Manager",
-  "level": "L2",
-  "country": "India",
-  "hireDate": "2026-11-20",
-  "salary": "50000.00"
-}
-```
-The currency is determined from the country. Returns the created employee and its compensation.
-
-### Update status
-```
-PATCH /employees/:id/status
-Content-Type: application/json
-
-{ "status": "INACTIVE" }
-```
-Sets the employment status to `ACTIVE` or `INACTIVE`. Returns the updated employee.
-
-## Compensation
-
-### Change salary
-```
-PATCH /employees/:id/compensation
-Content-Type: application/json
-
-{
-  "amount": "110000.00",
-  "reason": "Market adjustment"
-}
-```
-Creates a new compensation record (the old one is kept for history). Returns the new compensation and the history entry.
-
-Validation:
-- `amount` is required, must be a non-negative number
-- `reason` is required
-- The new amount must be different from the current amount
-
-### History
-```
-GET /employees/:id/compensation-history
-```
-Returns all salary changes for the employee (most recent first).
-
-## Analytics
-
-### Summary
-```
-GET /analytics/summary
-```
-Total headcount and counts by currency.
-```json
-{
-  "totalHeadcount": 10000,
-  "byCurrency": {
-    "USD": 2000,
-    "INR": 3000,
-    "GBP": 1500,
-    "JPY": 2500,
-    "CAD": 500,
-    "AUD": 500
-  }
-}
-```
-
-### By country
-```
-GET /analytics/by-country?currency=USD
-```
-Headcount, min/max/median salary for each country. The `currency` parameter is optional; if omitted, results are grouped by the country's default currency.
-
-### By department
-```
-GET /analytics/by-department?currency=USD
-```
-Same structure, grouped by department.
-
-### By level
-```
-GET /analytics/by-level?currency=USD
-```
-Same structure, grouped by level.
-
-### Distribution (salary histogram)
-```
-GET /analytics/distribution?currency=INR&buckets=20
-```
-Returns salary distribution in `buckets` ranges (default 20, max 50).
-```json
-{
-  "currency": "INR",
-  "buckets": [
-    { "from": 100000, "to": 200000, "count": 50 },
-    { "from": 200000, "to": 300000, "count": 120 },
-    ...
-  ]
-}
-```
-
-### Extremes (highest and lowest paid)
-```
-GET /analytics/extremes?currency=INR&limit=5
-```
-Returns the top N and bottom N earners (default 5, max 25).
-
-### Recent changes
-```
-GET /analytics/recent-changes?limit=10
-```
-The 10 most recent salary changes (across all employees, not filtered by currency).
-
-## Metadata
-
-### Filters
-```
-GET /meta/filters
-```
-Returns the available values for dropdowns.
-```json
-{
-  "countries": ["Australia", "Brazil", ...],
-  "departments": ["Customer Support", "Engineering", ...],
-  "levels": ["L1", "L2", "L3", "L4", "L5", "L6"],
-  "statuses": ["ACTIVE", "INACTIVE"],
-  "currencies": ["AUD", "BRL", "CAD", "EUR", "GBP", "INR", "JPY", "USD"]
-}
-```
-
-## Error responses
-
-All errors return JSON with `code` and `message`:
-```json
-{ "error": { "code": "VALIDATION_ERROR", "message": "The search text is too long (max 50 characters)" } }
-```
-
-Common codes:
-- `VALIDATION_ERROR` (400): input did not pass validation
-- `NOT_FOUND` (404): employee not found
-- `INTERNAL_ERROR` (500): server error (rare; includes a request ID for support)
+## Rules that apply everywhere
+- **Money is text**, such as `"105500.00"`, never a number. Numbers are refused.
+- **Currency follows the country** and cannot be chosen.
+- **Salary history is never edited.** A change adds a record with its reason.
+- **Errors** look like `{ "error": { "code", "message", "details?", "requestId" } }` with the codes
+  `VALIDATION_ERROR` (400), `NOT_FOUND` (404), `CONFLICT` (409), `BUSINESS_RULE_VIOLATION` (422) and `INTERNAL_ERROR` (500).
+- **Unknown query parameters and unknown body fields are refused** with a 400.
+- **No login.** The data is fictional.
+- **`view=usd`** converts to US dollars at fixed, illustrative rates. The answer says which date the rates are from.

@@ -44,37 +44,9 @@ Best of 5 calls, after the server has warmed up. The very first call after a res
 ## 3. Index review with EXPLAIN ANALYZE (tasks 5G.1 and 5G.2)
 
 `EXPLAIN ANALYZE` runs a query and shows how PostgreSQL did it and how long it took.
-I ran 13 of the main queries twice: **before** (all extra indexes removed) and **after** (the indexes we keep).
-The queries are in `docs/performance/queries.sql`. All queries now use an index (no sequential scans).
-
-| Query | Before | After | Speedup |
-| --- | --- | --- | --- |
-| List first 25 employees | 42 ms | 8 ms | 5x |
-| Search by name + filter by country | 65 ms | 11 ms | 6x |
-| Analytics: by-country with group-by | 180 ms | 37 ms | 5x |
-| Analytics: by-department with group-by | 320 ms | 47 ms | 7x |
-
-The indexes are on columns used in WHERE, JOIN, and ORDER BY. Without them, PostgreSQL does sequential scans (reading all 10,000 rows).
-
-**Current indexes:**
-```sql
-CREATE INDEX idx_employee_code ON employees(employee_code);
-CREATE INDEX idx_country ON employees(country);
-CREATE INDEX idx_department ON employees(department);
-CREATE INDEX idx_level ON employees(level);
-CREATE INDEX idx_employment_status ON employees(employment_status);
-CREATE INDEX idx_compensation_currency ON compensation(currency);
-CREATE INDEX idx_compensation_history_employee_id ON compensation_history(employee_id);
-```
-
-None are composite (multi-column) indexes. A composite index on `(country, department, level)` would help the most expensive query, but it would take 2× the storage and slow down inserts. The single-column indexes are simpler and cover all the use cases.
-
-## 4. What to watch on the live server
-
-- Response times will be slower over the internet (network latency + database in a different region).
-- The database connection pooling on the free tier has a limit. If the app gets slow, check connection count.
-- If analytics queries get slow (e.g., after adding more employees), add a materialized view that re-computes once an hour.
-- If salary searches get slow, add a full-text index on names and email addresses.
+I ran 13 of the main queries twice: **before** (all extra indexes removed, inside a transaction that is rolled back)
+and **after** (the indexes we keep). The queries are in `docs/performance/queries.sql`, and the full output
+is saved in `docs/performance/explain-results.txt`. To repeat it: `docs/performance/run.sh`.
 
 | Query | Before | After | What changed |
 | --- | --- | --- | --- |

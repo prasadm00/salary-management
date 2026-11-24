@@ -1,156 +1,186 @@
-# Design
+# High-Level Design (HLD)
 
-## Architecture
+This document explains the system from the outside in: who uses it, what it is made of, how it is deployed, and how a user moves through it. Detailed design (tables, API, class structure) is in the low-level design, added in Phase 3.
 
-One Express API (Node + TypeScript) and one React web app (Vite + TypeScript), both built from the same monorepo and deployed together.
-They share types and reference data via `shared/`.
-In development, they run on separate ports (4000 and 5173); Vite forwards `/api` calls.
-In production, Express serves both: `/api/*` routes answer the API, `/*` serves the web app.
+Related: [Requirements](REQUIREMENTS.md) · [User stories](USER_STORIES.md) · [Decisions](DECISIONS.md)
 
-```
-┌─ Express (API + static web app)
-│  ├─ /api/employees
-│  ├─ /api/analytics
-│  ├─ /api/meta
-│  └─ /* (serves index.html, the web app)
-│
-├─ React app (browser)
-│  ├─ Dashboard (headcount, stats by country/dept/level, chart)
-│  ├─ Employees (search, filter, sort, page, 10,000 rows)
-│  ├─ Employee detail (profile, salary, history)
-│  ├─ Add employee (form, sets currency from country)
-│  └─ Salary dialog (change with reason, validation)
-│
-└─ PostgreSQL (10,000 employees, normalized schema)
-   ├─ employees (code, name, email, dept, job title, level, country, status)
-   ├─ compensation (salary by currency, history with dates and reasons)
-   ├─ compensation_history (audit trail)
-   └─ indices (employee_code, country, department, level, etc.)
+## 1. System context
+
+Who and what touches the system. There is one human user and no external systems.
+
+```mermaid
+flowchart LR
+    HR["HR Manager<br/>(person)"]
+    SYS["ACME Salary Management<br/>(web application)"]
+    HR -- "searches, edits salaries,<br/>views insights" --> SYS
+    SYS -- "shows results,<br/>statistics, history" --> HR
 ```
 
-## Data flow
+- The HR manager is the only user. There is no login (decision 005).
+- No payroll, HRIS or exchange-rate service is connected (see Requirements, "Deliberately left out").
 
-**List employees:**
-1. Browser sends `GET /api/employees?country=IN&search=rao&sortBy=salary&page=2&pageSize=25`
-2. API validates all parameters against a Zod schema
-3. Database query with Prisma joins employees + their latest compensation, filters and sorts
-4. Result is 25 rows with employee code, name, dept, level, country, hire date, and current salary
-5. Browser renders a table, filters stay in the URL for sharing/back button
+## 2. Containers
 
-**Change salary:**
-1. Browser sends `PATCH /api/employees/:id/compensation` with `{ amount: "105500", reason: "Promotion" }`
-2. API validates the amount (required, non-negative, different from current)
-3. Database inserts a new compensation row (not an update), keeping the old one for history
-4. API returns the new salary with its `effectiveDate`
-5. Browser updates the page and shows the new salary + a new history entry
+The runnable parts and what each one is responsible for.
 
-**Analytics:**
-Database computes statistics in a single query: headcount, min/median/max salary by country, department, level, and currency.
-The chart uses the same data to show salary distribution in ranges.
+```mermaid
+flowchart TB
+    subgraph Browser["User's browser"]
+        UI["React single-page app<br/>Vite, TypeScript, Tailwind, shadcn/ui, Recharts<br/><i>Screens, forms, charts</i>"]
+    end
 
-## Decisions in the design
+    subgraph Render["Render (free web service)"]
+        STATIC["Static file server<br/><i>Serves the built UI</i>"]
+        API["Express API, TypeScript<br/><i>Validation, salary rules, queries</i>"]
+        PRISMA["Prisma client<br/><i>Typed database access</i>"]
+        STATIC --- API
+        API --> PRISMA
+    end
 
-| What | Why |
-| --- | --- |
-| PostgreSQL | Relational data, complex queries, proven, free tier available. The salary history is an audit trail: append-only, never edited. |
-| Prisma | Type-safe queries, easy migrations, generates the TypeScript types. `findUnique` by code is faster than by id. |
-| Express + JSON only | Simple, familiar. No server-side rendering, no websockets. The UI is a single-page app. |
-| React + React Query | Fetches data, caches it, refetches on tab focus, retries on network error. The page filters live in the URL, not the state. |
-| Tailwind + shadcn/ui | Pre-built components, consistent design system. The components are copied into the project (not npm packages), so they can be customized. |
-| No authentication | Deliberate. The demo runs fictional data, so anyone can read and edit it. If real users were added, authentication would be first. |
-| No caching headers | Deliberate. Salary data changes often. Each page load fetches fresh data from the server. |
-| Search in the database, not the browser | The app lists 10,000 employees. Fetching all of them and filtering in JavaScript would be slow and use a lot of memory. The database search is fast and always exact. |
-| Salary history is append-only | Never edited or deleted. Changes are part of the audit trail. If a salary was entered wrong, a new correction entry is added, not an edit. |
-| Currency is determined by country | The UI doesn't let you pick a currency; the API sets it from the country. This prevents mixed currency mistakes (e.g., adding a 50,000 USD salary to someone in INR). |
-| "US dollars (approximate)" view | Shows conversions at a fixed date, with the date clearly labelled. It's not real-time and uses illustrative rates. |
+    subgraph Neon["Neon (free PostgreSQL)"]
+        DB[("PostgreSQL<br/>employees, compensations,<br/>compensation_changes")]
+    end
 
-## Schema
+    SEED["Seed script<br/><i>10,000 fictional employees</i>"]
 
-```sql
-CREATE TABLE employees (
-  id SERIAL PRIMARY KEY,
-  employee_code VARCHAR UNIQUE NOT NULL,
-  full_name VARCHAR NOT NULL,
-  email VARCHAR UNIQUE NOT NULL,
-  department VARCHAR NOT NULL,
-  job_title VARCHAR NOT NULL,
-  level VARCHAR NOT NULL REFERENCES level_enum(value),
-  country VARCHAR NOT NULL REFERENCES country_enum(value),
-  employment_status VARCHAR DEFAULT 'ACTIVE',
-  hired_at DATE NOT NULL,
-  created_at TIMESTAMP DEFAULT now()
-);
-
-CREATE TABLE compensation (
-  id SERIAL PRIMARY KEY,
-  employee_id BIGINT REFERENCES employees(id),
-  amount DECIMAL(13,2) NOT NULL,
-  currency VARCHAR NOT NULL REFERENCES currency_enum(value),
-  effective_at DATE DEFAULT CURRENT_DATE,
-  created_at TIMESTAMP DEFAULT now()
-);
-
-CREATE TABLE compensation_history (
-  id SERIAL PRIMARY KEY,
-  employee_id BIGINT REFERENCES employees(id),
-  previous_amount DECIMAL(13,2),
-  new_amount DECIMAL(13,2) NOT NULL,
-  currency VARCHAR NOT NULL,
-  reason VARCHAR,
-  effective_at DATE DEFAULT CURRENT_DATE,
-  created_at TIMESTAMP DEFAULT now()
-);
-
-CREATE INDEX idx_employees_country ON employees(country);
-CREATE INDEX idx_employees_department ON employees(department);
-CREATE INDEX idx_employees_level ON employees(level);
-CREATE INDEX idx_employees_code ON employees(employee_code);
-CREATE INDEX idx_compensation_employee ON compensation(employee_id);
-CREATE INDEX idx_compensation_currency ON compensation(currency);
+    UI -- "HTTPS, JSON (/api/...)" --> API
+    Browser -. "loads app files" .-> STATIC
+    PRISMA -- "SQL over TLS" --> DB
+    SEED -- "batch inserts" --> DB
 ```
 
-## Screens
+| Container | Responsibility | Does not do |
+| --- | --- | --- |
+| React app | Show data, collect input, draw charts | Business rules, large calculations |
+| Express API | Validate input, apply salary rules, build queries, shape responses | Render screens |
+| PostgreSQL | Store data, enforce constraints, run filtering, sorting, paging and statistics | Business workflow |
+| Seed script | Create repeatable fictional data | Run in production requests |
 
-**Dashboard:** headcount per currency, then one card per currency with the min/median/max salary. Below that, a table of statistics by country (or department or level). A histogram shows salary distribution. The highest and lowest paid employees (5 each). And the latest 10 salary changes.
+**Key rule:** the browser never receives all 10,000 rows. Searching, sorting, paging and statistics run in the database.
 
-**Employees:** a search box, filters for country/dept/level/status/currency. A sortable table of 25 employees per page. Names link to the employee page. The search waits 300 ms after the last key press.
+## 3. Deployment
 
-**Employee detail:** profile card with name, code, dept, job title, level, country, hire date, and status. Current salary and an "Update salary" button. A "Mark inactive" or "Mark active" button. And a list of salary changes with dates and reasons.
+How code gets from GitHub to a live URL. Every service is on a free tier (decision 004).
 
-**Add employee:** form for name, email, dept, job title, level, country, hire date and salary. The country dropdown picks the currency. Submit or cancel. On success, opens the new employee's page.
+```mermaid
+flowchart LR
+    DEV["Developer<br/>(local machine)"] -- "git push" --> GH["GitHub repository"]
+    GH -- "on push / PR" --> CI["GitHub Actions<br/>lint + tests"]
+    CI -- "green" --> OK{"Tests pass?"}
+    OK -- "yes, main branch" --> RENDER["Render<br/>build UI + API,<br/>run migrations, start"]
+    OK -- "no" --> FIX["Fix and push again"]
+    RENDER --> LIVE["Live URL<br/>(UI + API together)"]
+    RENDER -- "DATABASE_URL" --> NEON[("Neon PostgreSQL")]
+    PING["Free uptime pinger"] -- "GET /api/health<br/>every ~10 min" --> LIVE
+    DEV -- "one-off: run seed<br/>against Neon" --> NEON
+```
 
-**Salary dialog:** "New amount" in the employee's currency, "Reason" text field. Submit or cancel. If the new amount is the same as the current one, or the form is empty, messages appear next to the fields. The dialog traps focus (Tab stays inside), Escape closes it, and focus returns to the button that opened it.
+**Environments**
 
-## Mobile
+| | Local | Production |
+| --- | --- | --- |
+| Database | Docker PostgreSQL | Neon |
+| API + UI | `npm run dev` (two dev servers) | One Render service |
+| Config | `.env` (not committed) | Render environment variables |
+| Data | Seeded locally | Seeded once from the developer machine |
 
-On phone width (390 px), the employees table hides the employee code, level, country and hire date. The department appears under the name in gray text. The salary stays. Tables are keyboard-reachable regions that scroll sideways.
+**Free-tier behaviour:** Render sleeps the API after about 15 minutes idle, so the first request can take up to a minute. The pinger and a README note reduce the impact.
 
-On tablet (820 px), all columns show, but horizontal scrolling is still possible.
+## 4. Main user flow
 
-## Performance
+What the HR manager does, and where each step is served from.
 
-The database has indices on the fields used in WHERE, JOIN and ORDER BY clauses. Statistics queries run as a single SQL statement, not multiple queries. The app doesn't cache salary data, because it changes often. React Query re-fetches on tab focus (so a stale browser tab updates when you switch back).
+```mermaid
+flowchart TD
+    START(["Open the app"]) --> HOME["Dashboard<br/>headcount, salary statistics, chart"]
+    START --> DIR["Employee directory"]
 
-See `docs/PERFORMANCE.md` for measured response times.
+    HOME -- "change filters<br/>or toggle USD view" --> HOME
+    HOME -- "click a group or a person" --> DIR
 
-## Testing strategy
+    DIR -- "search, filter, sort, page" --> DIR
+    DIR -- "open a row" --> PROFILE["Employee profile<br/>details, current salary, history"]
+    DIR -- "Add employee" --> ADD["Add employee form"]
+    ADD -- "valid + saved" --> PROFILE
+    ADD -- "invalid" --> ADD
 
-- Unit tests for money, currency, validation, and formatting rules.
-- API tests that run against a real PostgreSQL test database (which is wiped before each test run).
-- UI tests that drive React components with a fake `fetch` function, so the test can see the exact requests the page made.
-- Accessibility tests run inside the test suite (axe rules, except colour contrast) and in a real browser (`npm run qa`).
+    PROFILE -- "Update salary" --> EDIT["Edit salary dialog<br/>new amount + reason"]
+    EDIT -- "valid + saved" --> PROFILE
+    EDIT -- "invalid" --> EDIT
+    PROFILE -- "Mark inactive" --> PROFILE
+    PROFILE -- "back" --> DIR
+```
 
-See `docs/QUALITY.md` for coverage numbers.
+**Where it is served from**
 
-## What I'd do next
+| Step | API call | Story |
+| --- | --- | --- |
+| Directory list, search, filter, sort | `GET /api/employees` | US-01 to US-04 |
+| Filter dropdown options | `GET /api/meta/filters` | US-03 |
+| Profile | `GET /api/employees/:id` | US-05 |
+| Add employee | `POST /api/employees` | US-06 |
+| Update salary | `PATCH /api/employees/:id/compensation` | US-07 |
+| Salary history | `GET /api/employees/:id/compensation-history` | US-08 |
+| Dashboard | `GET /api/analytics/...` | US-10 to US-14 |
 
-1. **Rate limiting** (if real users were added).
-2. **Soft deletes** for employees (a flag instead of removing the row).
-3. **Bulk upload** (import a CSV of employees).
-4. **Compensation plans** (a template that sets new employees' salary based on level and country).
-5. **Notifications** (email a summary of salary changes).
-6. **Multi-tenancy** (separate data for each company).
-7. **Graphs of salary trends** (how the median has changed over time).
-8. **Export** (download the employee list or statistics as a CSV).
-9. **Scheduled jobs** (e.g., annual cost-of-living adjustments).
-10. **Replication** (read replicas for heavy analytics queries).
+### Request path for one action (update a salary)
+
+```mermaid
+sequenceDiagram
+    actor HR as HR Manager
+    participant UI as React app
+    participant API as Express API
+    participant DB as PostgreSQL
+
+    HR->>UI: Enter new amount and reason, submit
+    UI->>API: PATCH /api/employees/:id/compensation
+    API->>API: Validate input and salary rules
+    alt invalid
+        API-->>UI: 400 with field errors
+        UI-->>HR: Show errors next to fields
+    else valid
+        API->>DB: Begin transaction
+        API->>DB: Update compensation, insert history row
+        DB-->>API: Commit
+        API-->>UI: 200 with updated employee
+        UI-->>HR: Show new salary and history entry
+    end
+```
+
+## 5. Technology choices and trade-offs
+
+| Area | Choice | Why | Trade-off | Alternative not chosen |
+| --- | --- | --- | --- | --- |
+| Language | TypeScript (UI and API) | One language, shared types, matches the role | Build step needed | Plain JavaScript (less safe) |
+| Database | PostgreSQL | Exact `NUMERIC` money, median and percentile functions, free persistent hosting (Neon) | Needs Docker locally | SQLite (no decimal type, weak aggregates) |
+| ORM | Prisma | Typed queries, migrations, simple seed workflow | Complex statistics need raw SQL | Drizzle, Knex (less tooling out of the box) |
+| API | Express | Small, well known, easy to test with Supertest | No built-in structure, so we add modules ourselves | NestJS (more setup than this scope needs) |
+| Validation | Zod | One schema for runtime checks and types, shared by UI and API | Another library to learn | Hand-written checks |
+| UI build | Vite + React | Fast dev server, simple build | Single-page app, no server rendering | Next.js (more than needed, no SEO need) |
+| Server state | TanStack Query | Caching, loading and error states, easy paging | Extra dependency | Manual fetch and state |
+| Styling | Tailwind CSS + shadcn/ui | Accessible components, quick consistent look, components live in our repo | Utility classes are verbose | Material UI (heavier), plain CSS (slower) |
+| Charts | Recharts | React-native charts, simple API | Fine for these chart sizes only | D3 (more work), Chart.js (not React-first) |
+| Tests | Vitest + Supertest | Fast, TypeScript native, one runner for UI and API | Younger than Jest | Jest (slower setup with TypeScript) |
+| Hosting | Render + Neon | Free, no card needed, persistent database | API sleeps when idle | Railway, Fly.io (no lasting free tier) |
+| Packaging | npm workspaces | One install, shared package | No task caching | Nx, Turborepo (overkill) |
+
+## 6. Non-functional requirements
+
+| Area | Target | How we meet it | How we check it |
+| --- | --- | --- | --- |
+| **Performance** | List and statistics responses under 300 ms with 10,000 rows | Database-side filtering, sorting, paging and statistics. Indexes on country, department, level, code and name. Page size capped at 100. | `EXPLAIN ANALYZE` before and after indexes, recorded in `docs/PERFORMANCE.md` |
+| **Correctness** | No rounding errors in money, no mixed-currency totals | `NUMERIC(14,2)` in the database, decimal handling in code (never floating point), grouping by currency | Unit tests on small hand-checked datasets |
+| **Data integrity** | Salary change and its history are never out of step | One database transaction, unique constraints on code and email, foreign keys | Tests that force a failure and check rollback |
+| **Security** | Safe for an open, fictional-data demo | Validate every input at the API edge. Parameterised queries (Prisma). Sort columns from an allow-list. CORS limited to the app origin. No secrets in the repository. Security headers. `npm audit` before release. Error messages never leak internals. | Tests for invalid input and unknown sort columns, dependency audit |
+| **Privacy** | No real personal data | Seed uses generated names and emails only | Review of seed script and demo |
+| **Reliability** | Clear failure behaviour | Consistent error format. `/api/health` checks database connectivity. Graceful handling of a sleeping or slow API in the UI. | Health and error-handler tests |
+| **Accessibility** | Usable with keyboard, readable | Labelled form fields, visible focus, sufficient contrast, semantic table markup, error text tied to fields | Manual keyboard pass and a checklist |
+| **Maintainability** | Easy for a newcomer to read | Feature modules, small functions, strict TypeScript, lint and format on CI, docs beside code | CI green, code review |
+| **Testability** | Fast and deterministic | Pure domain logic separate from I/O, seeded random data, isolated test database | Suite runs in seconds locally |
+| **Observability** | Enough to debug a demo | Structured request logs, request ID in error responses | Manual check |
+
+## 7. What a newcomer should take from this
+1. One user, one web app, one database.
+2. The React app only displays and collects. The Express API holds all rules. PostgreSQL does the heavy filtering and statistics.
+3. Money is exact and currencies are never mixed by accident.
+4. Everything runs on free tiers, deployed from GitHub, with one URL.

@@ -49,6 +49,8 @@ Related: [Data model](LLD.md) · [User stories](USER_STORIES.md) · [Design](DES
 
 `details` is present only when there is field-level information. `message` is written for a non-technical reader. Stack traces and database messages are never returned.
 
+Special cases for `details[].field`: an unknown body field or query parameter is listed by its own name with the message `"This field is not allowed."`, and a problem with the whole body (for example a list instead of an object) uses the field name `"body"`.
+
 | HTTP | `code` | Meaning |
 | --- | --- | --- |
 | 400 | `VALIDATION_ERROR` | Malformed or invalid input (bad field, bad query value, unknown parameter) |
@@ -187,7 +189,7 @@ Story: US-06.
 | `hireDate` | Required, a real date, not in the future |
 | `salary` | Required money string, greater than zero |
 
-The server sets `employeeCode` (next in sequence), `employmentStatus` (`ACTIVE`) and the **currency** from the country. The client cannot send a currency. The employee, the current compensation and the starting history row (`oldAmount: null`, reason `"Initial salary"`) are saved in one transaction.
+The server sets `employeeCode` (next in sequence), `employmentStatus` (`ACTIVE`) and the **currency** from the country. The client cannot send a currency. The employee, the current compensation and the starting history row (`oldAmount: null`, reason `"Initial salary"`) are saved in one transaction. The starting salary's `effectiveDate` is the hire date, and the history row's `changedAt` is the time it was recorded. The `employeeCode` is built from the employee id (`EMP-` plus six digits), so two employees can never share a code. A rejected create can leave a gap in the numbering, because PostgreSQL never hands back a reserved id.
 
 | Status | Body | When |
 | --- | --- | --- |

@@ -121,11 +121,11 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 - [x] **5B.3** Salary change rule. Tests: same amount rejected, missing reason rejected.
 
 ### 5C. Employees. Branch `feat/employees`
-- [ ] **5C.1** Create employee. Tests: valid input, duplicate code or email gives 409, bad input gives 400.
-- [ ] **5C.2** Get employee by id. Tests: found, not found gives 404.
-- [ ] **5C.3** Update compensation with history in one transaction. Tests: history row created, old and new amounts stored, failure rolls back both.
-- [ ] **5C.4** Compensation history endpoint. Tests: newest first.
-- [ ] **5C.5** Optional: deactivate employee (status change, never hard delete)
+- [x] **5C.1** Create employee. Tests: valid input, duplicate code or email gives 409, bad input gives 400.
+- [x] **5C.2** Get employee by id. Tests: found, not found gives 404.
+- [x] **5C.3** Update compensation with history in one transaction. Tests: history row created, old and new amounts stored, failure rolls back both.
+- [x] **5C.4** Compensation history endpoint. Tests: newest first.
+- [x] **5C.5** Optional: deactivate employee (status change, never hard delete)
 
 ### 5D. Search, filter, sort, pagination. Branch `feat/employee-search`
 - [ ] **5D.1** Pagination. Tests: default page size, max 100, page beyond end returns empty list with correct total.

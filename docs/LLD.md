@@ -416,12 +416,14 @@ api/src/
 ├── modules/
 │   ├── employees/
 │   │   ├── employee.routes.ts
-│   │   ├── employee.schema.ts     Zod schemas (also exported through shared)
+│   │   ├── employee.schema.ts     Zod schemas for body and URL parameters
 │   │   ├── employee.controller.ts
 │   │   ├── employee.service.ts
-│   │   ├── employee.repository.ts
-│   │   └── employee.mapper.ts     database row to API object
-│   ├── compensation/              salary change and history (same five files)
+│   │   ├── employee.repository.ts         the interface the services depend on
+│   │   └── prismaEmployeeRepository.ts    the PostgreSQL implementation (maps rows to API objects)
+│   ├── compensation/              salary change and history: routes, schema, controller, service.
+│   │                              Uses the employees repository, because one transaction
+│   │                              touches the employee, salary and history tables together.
 │   ├── analytics/                 same pattern, repository uses raw SQL
 │   ├── meta/                      filter options
 │   └── health/

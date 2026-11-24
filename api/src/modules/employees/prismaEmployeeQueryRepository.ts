@@ -1,6 +1,7 @@
-import { USD_PER_UNIT, type Employee, type EmployeeSortColumn } from '@acme/shared';
+import type { Employee, EmployeeSortColumn } from '@acme/shared';
 import { containsPattern } from '../../db/likePattern.js';
 import type { PrismaClient } from '../../db/prisma.js';
+import { usdAmountSql } from '../../db/usdSql.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { ListEmployeesQuery } from './employeeList.schema.js';
 import { toEmployee } from './employee.mapper.js';
@@ -107,18 +108,7 @@ function orderBy(query: ListEmployeesQuery): Prisma.Sql {
 
 function sortExpression(query: ListEmployeesQuery): Prisma.Sql {
   if (query.sortBy === 'salary') {
-    return query.view === 'usd' ? usdAmount() : Prisma.sql`c.amount`;
+    return query.view === 'usd' ? usdAmountSql() : Prisma.sql`c.amount`;
   }
   return Prisma.raw(SORT_SQL[query.sortBy]);
-}
-
-/**
- * A salary converted to USD with the fixed rates, kept as an exact decimal and not rounded,
- * so the order is right even when two salaries differ by less than a cent after conversion.
- */
-function usdAmount(): Prisma.Sql {
-  const branches = Object.entries(USD_PER_UNIT).map(
-    ([currency, rate]) => Prisma.sql`WHEN ${currency} THEN c.amount * ${String(rate)}::numeric`,
-  );
-  return Prisma.sql`(CASE c.currency ${Prisma.join(branches, ' ')} END)`;
 }

@@ -1,16 +1,15 @@
-import {
-  CURRENCY_VIEWS,
-  EMPLOYEE_SORT_COLUMNS,
-  EMPLOYMENT_STATUSES,
-  LEVELS,
-  SORT_DIRECTIONS,
-} from '@acme/shared';
+import { EMPLOYEE_SORT_COLUMNS, EMPLOYMENT_STATUSES, SORT_DIRECTIONS } from '@acme/shared';
 import { z } from 'zod';
-import { isKnownCountry, isKnownCurrency } from '../../domain/currency.js';
+import {
+  countryField,
+  currencyField,
+  departmentField,
+  levelField,
+  viewField,
+} from '../../validation/filterFields.js';
 import { pageField, pageSizeField } from '../../validation/pagination.js';
 
 const SEARCH_MAX_LENGTH = 100;
-const DEPARTMENT_MAX_LENGTH = 60;
 
 /**
  * The query string of GET /api/employees (docs/API.md section 2.1).
@@ -30,24 +29,11 @@ export const employeeListQuerySchema = z.strictObject({
     .transform((text) => (text === '' ? undefined : text))
     .optional(),
 
-  country: z
-    .string({ error: 'Country is not supported.' })
-    .refine(isKnownCountry, { error: 'Country is not supported.' })
-    .optional(),
-  department: z
-    .string({ error: 'Department must be given once, as text.' })
-    .trim()
-    .min(1, { error: 'Department must not be empty.' })
-    .max(DEPARTMENT_MAX_LENGTH, {
-      error: `Department must be at most ${DEPARTMENT_MAX_LENGTH} characters.`,
-    })
-    .optional(),
-  level: z.enum(LEVELS, { error: 'Level must be one of L1 to L6.' }).optional(),
+  country: countryField,
+  department: departmentField,
+  level: levelField,
   status: z.enum(EMPLOYMENT_STATUSES, { error: 'Status must be ACTIVE or INACTIVE.' }).optional(),
-  currency: z
-    .string({ error: 'Currency is not supported.' })
-    .refine(isKnownCurrency, { error: 'Currency is not supported.' })
-    .optional(),
+  currency: currencyField,
 
   /** R-31: only these columns can be sorted by. */
   sortBy: z
@@ -56,7 +42,7 @@ export const employeeListQuerySchema = z.strictObject({
     })
     .default('fullName'),
   sortDir: z.enum(SORT_DIRECTIONS, { error: 'Sort direction must be asc or desc.' }).default('asc'),
-  view: z.enum(CURRENCY_VIEWS, { error: 'View must be local or usd.' }).default('local'),
+  view: viewField,
 
   page: pageField,
   pageSize: pageSizeField,

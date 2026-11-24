@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -11,6 +12,8 @@ export default defineConfig(
       '**/dist/**',
       '**/coverage/**',
       '**/generated/**',
+      // Components created by the shadcn tool. We do not edit them by hand.
+      'web/src/components/ui/**',
       '.history/**',
       '.husky/_/**',
     ],
@@ -63,8 +66,17 @@ export default defineConfig(
     rules: { 'no-console': 'off' },
   },
 
+  // The browser check scripts print to the terminal, and parts of them run inside the browser page.
+  {
+    files: ['docs/qa/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+    rules: { 'no-console': 'off' },
+  },
+
+  // The web app runs in a browser and uses React, so the rules of hooks apply.
   {
     files: ['web/**/*.{ts,tsx}'],
+    extends: [reactHooks.configs.flat.recommended],
     languageOptions: { globals: globals.browser },
   },
 

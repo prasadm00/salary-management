@@ -7,3 +7,4 @@ package-lock.json
 # Hand-formatted tables and diagrams
 docs
 *.md
+web/src/components/ui

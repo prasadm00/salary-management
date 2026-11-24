@@ -15,3 +15,6 @@ coverage/
 .history
 # Generated Prisma client (run: npm run db:generate -w api)
 api/src/generated/
+
+# Frontend build output
+web/dist/

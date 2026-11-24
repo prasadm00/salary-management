@@ -135,18 +135,18 @@ Every item follows red, green, refactor. Each is its own branch, merged with `--
 - [x] **5D.5** Filter options endpoint for dropdowns.
 
 ### 5E. Analytics. Branch `feat/analytics`
-- [ ] **5E.1** Headcount by country, department, level
-- [ ] **5E.2** Salary stats per currency: min, max, average, median, p25, p75. Tests with small hand-checked datasets.
-- [ ] **5E.3** Stats grouped by country, department, level, with the same filters as the list
-- [ ] **5E.4** Salary distribution buckets (histogram) within one currency
-- [ ] **5E.5** Optional USD view using the dated rates table (D4), clearly labelled with its date
-- [ ] **5E.6** Top and bottom paid, recently changed salaries
+- [x] **5E.1** Headcount by country, department, level
+- [x] **5E.2** Salary stats per currency: min, max, average, median, p25, p75. Tests with small hand-checked datasets.
+- [x] **5E.3** Stats grouped by country, department, level, with the same filters as the list
+- [x] **5E.4** Salary distribution buckets (histogram) within one currency
+- [x] **5E.5** Optional USD view using the dated rates table (D4), clearly labelled with its date
+- [x] **5E.6** Top and bottom paid, recently changed salaries
 
 ### 5F. Seed. Branch `feat/seed-10k`
-- [ ] **5F.1** Deterministic generator. Test: same seed gives identical output.
-- [ ] **5F.2** Seed script with batch inserts. Test: creates exactly 10,000 employees with unique codes and emails, and amounts inside the bands.
-- [ ] **5F.3** Idempotent: re-running clears and re-seeds, or skips
-- [ ] **5F.4** Measure seed time and record it in `docs/PERFORMANCE.md`
+- [x] **5F.1** Deterministic generator. Test: same seed gives identical output.
+- [x] **5F.2** Seed script with batch inserts. Test: creates exactly 10,000 employees with unique codes and emails, and amounts inside the bands.
+- [x] **5F.3** Idempotent: re-running clears and re-seeds, or skips
+- [x] **5F.4** Measure seed time and record it in `docs/PERFORMANCE.md`
 
 ### 5G. Performance. Branch `chore/performance`
 - [ ] **5G.1** Add indexes from Phase 3.1

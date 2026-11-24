@@ -326,7 +326,13 @@ Story: US-12.
 }
 ```
 
-Buckets are equal width, cover `min` to `max`, and each employee is in exactly one bucket. A range includes its `from` and excludes its `to`, except the last, which includes `max`. The counts add up to `headcount`. If nobody matches, `buckets` is `[]`.
+Buckets are equal width, cover `min` to `max`, and each employee is in exactly one bucket. A range includes its `from` and excludes its `to`, except the last, which includes `max`. The counts add up to `headcount`.
+
+How the buckets are sized, so every edge is an exact amount:
+- The width is `(max - min) / buckets`, **rounded up to a whole cent**. Because of the rounding, the last bucket can end a little above `max` (for example, a range of 100.01 in 5 buckets has a width of 20.01, and the last bucket ends at 110.05 when the maximum is 110.01).
+- If everyone earns the same amount, there is a single bucket `{ from: x, to: x, count: headcount }`, whatever `buckets` is.
+- If nobody matches, `headcount` is `0`, `min` and `max` are `null`, and `buckets` is `[]`.
+- In the USD view each salary is first rounded to a whole cent, as it appears elsewhere.
 
 ### 3.4 `GET /api/analytics/extremes`: highest and lowest paid
 Story: US-14.

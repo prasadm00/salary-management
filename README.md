@@ -25,6 +25,7 @@ docker compose up -d         # local PostgreSQL (or use any PostgreSQL 14+ you a
 npm install
 npm run db:generate -w api   # generate the Prisma client
 npm run db:migrate -w api    # create the tables in salary_management
+npm run seed -w api          # add 10,000 fictional employees (takes a few seconds)
 npm run check                # lint, format check, type-check, tests
 npm run dev -w api           # API on http://localhost:4000
 ```
@@ -43,6 +44,7 @@ The tests apply migrations to `salary_management_test` themselves. They refuse t
 | --- | --- |
 | `npm run lint` / `npm run lint:fix` | ESLint (strict, type-aware) |
 | `npm run format` / `npm run format:check` | Prettier |
+| `npm run seed -w api` | Replace all data with 10,000 fictional employees. Safe to run again. Refuses to run on a remote database unless `SEED_CONFIRM=yes` |
 | `npm run db:generate -w api`, `db:migrate`, `db:deploy` | Generate the Prisma client, create a migration, apply migrations |
 | `npm run typecheck` | `tsc --noEmit` in every workspace (strict mode) |
 | `npm test` | Vitest in every workspace |

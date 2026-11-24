@@ -229,7 +229,7 @@ All names and emails are fictional, and the `.example` domain never receives mai
 | Question from the HR manager | Query shape |
 | --- | --- |
 | "Find Priya in India" | `employees` filtered by `country`, trigram search on `full_name`, joined to `compensations` |
-| "Median salary by department in INR" | `compensations` joined to `employees`, `WHERE currency = 'INR'`, `GROUP BY department`, `percentile_cont(0.5)` |
+| "Median salary by department in INR" | `compensations` joined to `employees`, `WHERE currency = 'INR'`, `GROUP BY department`, exact median from an ordered array (see R-36) |
 | "Headcount per country" | `employees` `GROUP BY country` with a status filter |
 | "How did this person's pay change?" | `compensation_changes` for one `employee_id`, newest first |
 | "What changed recently?" | `compensation_changes` `ORDER BY changed_at DESC LIMIT 10` |
@@ -502,11 +502,13 @@ Every rule has an ID, an owner, and the test that proves it. Rules are numbered 
 
 **Why the median needs care (R-36).** PostgreSQL's `percentile_cont` converts numbers to floating point, which breaks the "no float arithmetic" rule (R-04). So the median is computed exactly with `numeric` arithmetic:
 
-1. Number the rows by amount within each group (`row_number`) and count them (`count`).
-2. Take the middle row when the count is odd, or the average of the two middle rows when it is even.
-3. Round once to two decimals.
+1. Collect the salaries of each group and currency, in order, into an array `a` of `n` values (`array_agg(amount ORDER BY amount)`).
+2. Pick the middle by position with whole-number division: `median = (a[(n+1)/2] + a[(n+2)/2]) / 2`. For an odd `n` both positions are the same middle value. For an even `n` they are the two middle values.
+3. Round once to two decimals, half away from zero.
 
-The nearest-rank quartiles (R-37) return a real amount from the data, also as exact `numeric`.
+The nearest-rank quartiles (R-37) are `a[(n+3)/4]` and `a[(3n+3)/4]`, which equal `ceil(0.25n)` and `ceil(0.75n)` without any floating point. They return a real salary from the data.
+
+This was checked against PostgreSQL's own `percentile_cont` and `percentile_disc` on 10,000 rows: median, quartiles and average matched exactly for every currency tried.
 
 ### 5.4 The `Money` value object
 
@@ -700,20 +702,22 @@ Simple sketches, not final visuals.
 
 Goal: `npm run seed` creates exactly 10,000 fictional employees with believable pay, the same every time (US-15).
 
-### 7.1 Structure: pure generator plus a thin writer
+### 7.1 Structure: make the data in memory, then save it
 
 ```mermaid
 flowchart LR
-    SEEDNUM["Seed number<br/>(constant 2026)"] --> PRNG["Seeded random generator<br/>(mulberry32)"]
-    PRNG --> GEN["generateDataset(seed, count)<br/>pure function, no database"]
-    REF["Reference data<br/>countries, bands, name lists"] --> GEN
-    GEN --> DATA["Employees + compensations + history rows<br/>(plain objects in memory)"]
-    DATA --> TEST["Unit tests<br/>count, uniqueness, bands, repeatability"]
-    DATA --> WRITER["Writer: clears tables, inserts in batches of 1,000"]
-    WRITER --> DB[("PostgreSQL")]
+    LISTS["seedData.ts<br/>names, departments, salary rules"] --> GEN["generateDataset.ts<br/>makes the rows in memory"]
+    RANDOM["random.ts<br/>same seed, same numbers"] --> GEN
+    GEN --> ROWS["employees, salaries, salary history"]
+    ROWS --> TEST["Unit tests<br/>no database needed"]
+    ROWS --> SAVE["seedDatabase.ts<br/>clear tables, save 1,000 rows at a time"]
+    SAVE --> DB[("PostgreSQL")]
+    CMD["prisma/seed.ts<br/>the command: npm run seed"] --> SAFE["safety.ts<br/>refuses a remote database"]
+    SAFE --> GEN
+    CMD --> SAVE
 ```
 
-The generator is pure, so tests run in milliseconds with no database. The writer is small and covered by one database test.
+Making the data never touches the database, so its tests run in milliseconds. Saving it is a short function with its own database tests. One file does one job, which keeps each easy to explain.
 
 ### 7.2 Rules for repeatability
 - A tiny seeded generator (`mulberry32`) replaces `Math.random`. The same seed number gives the same sequence on any machine.
@@ -729,10 +733,10 @@ The generator is pure, so tests run in milliseconds with no database. The writer
 | **Department** | Engineering 35%, Sales 15%, Operations 12%, Customer Support 10%, Marketing 8%, Finance 7%, HR 5%, Product 5%, Legal 3% |
 | **Level** | L1 18%, L2 27%, L3 25%, L4 18%, L5 8%, L6 4% |
 | **Status** | 95% active, 5% inactive |
-| **Hire date** | Between 2010-01-01 and 2026-10-31, weighted towards recent years |
-| **Names** | Pools of at least 40 first names and 40 last names per region (South Asian, Western, Japanese, Brazilian). The pool follows the country. All fictional combinations. |
-| **Email** | `first.last@acme.example`, with a numeric suffix when a name repeats, so every email is unique |
-| **Job titles** | A table of titles per department and level, for example Engineering L1 "Associate Software Engineer", L3 "Software Engineer", L5 "Principal Engineer" |
+| **Hire date** | A random day between 2010-01-01 and 2026-10-31 (all days equally likely, to keep it simple) |
+| **Names** | Five lists of 12 first names and 12 last names (Indian, English-speaking, European, Japanese, Brazilian). The list follows the country. Names are made up from common words and are not real people. |
+| **Email** | `first.last@acme.example`. The second person with the same name gets `first.last2@...`, and so on, so every email is unique |
+| **Job titles** | One role per department, with a word for the level: L1 "Associate Engineer", L2 "Engineer", L3 "Senior Engineer", L4 "Lead Engineer", L5 "Principal Engineer", and L6 "Head of Engineering" |
 
 ### 7.4 Salary bands
 
@@ -756,42 +760,48 @@ Base figure in USD-equivalent annual base salary per level, then adjusted for co
 | Engineering 1.10, Product 1.10, Legal 1.05, Sales 1.00, Finance 1.00, Marketing 0.95, Operations 0.90, HR 0.90, Customer Support 0.80 | |
 
 ```
-usdAmount   = random value in the level range
+usdAmount   = random whole number in the level range
 localAmount = usdAmount x countryFactor x departmentFactor / USD_PER_UNIT[currency]
-final       = localAmount rounded to 3 significant figures, with ".00"
+final       = localAmount rounded to the nearest 100, written with ".00"
 ```
 
-Rounding to three significant figures gives clean numbers (for example 2,400,000 INR or 8,450,000 JPY) at any currency scale. The exact decimal arithmetic uses the same `Money` code as the API.
+Rounding to the nearest 100 gives clean numbers, such as 1,966,500 INR. The amounts are whole numbers, so nothing is lost to decimals. This code only makes fictional test data, so it uses plain numbers. The real money rules (`Money`) are used by the API.
 
 ### 7.5 Salary history
 - Every employee gets a starting history row: `oldAmount` null, reason "Initial salary", dated on the hire date.
 - About 40% of employees also get 1 to 3 raises. Each is 3% to 15%, dated after the hire date and before the reference date, with reasons from a short list ("Annual review", "Promotion", "Market adjustment").
 - The current compensation always equals the newest history row's new amount, and `effectiveDate` equals that row's date. A test checks this for all 10,000.
-- Expected volume: about 10,000 employees, 10,000 compensations and roughly 16,000 history rows.
+- Someone hired fewer than 90 days before the reference date gets no raise, because there has not been time for one.
+- Measured volume: 10,000 employees, 10,000 salaries and 17,967 history rows.
 
-### 7.6 The writer
-1. Check safety (see below), then in one transaction run `TRUNCATE` on the three tables with `RESTART IDENTITY`.
-2. Insert employees, compensations, then history in batches of **1,000** with `createMany`. Employee ids are given explicitly.
-3. Reset the id sequences with `setval`, so later inserts through the app get fresh ids.
-4. Print row counts and elapsed time.
+### 7.6 Saving the data
+1. Check safety (see below), then empty the three tables with `TRUNCATE ... RESTART IDENTITY`.
+2. Save employees, then salaries, then history, in batches of **1,000** with `createMany`. Employees are given their ids.
+3. Move the employee id counter forward with `setval`, so the next employee added in the app gets id 10,001 and does not clash.
+4. Print how many rows were made and how long it took.
 
-**Idempotent:** running it twice gives the same final data, with no duplicates (US-15 AC5).
+This is not wrapped in one database transaction, to keep it simple (an interactive transaction has a 5-second default limit, which a slow remote database could exceed). If it stops half way, run it again: it starts by emptying the tables.
+
+**Safe to run again:** running it twice gives the same final data, with no duplicates (US-15 AC5).
 
 **Safety guard.** The script wipes data. It refuses to run unless `DATABASE_URL` points to localhost, or `SEED_CONFIRM=yes` is set. This stops an accidental wipe of the live database and still allows the one deliberate production seed.
 
-### 7.7 Expected runtime
+### 7.7 Runtime
 
-| Where | Estimate |
+| Where | Time |
 | --- | --- |
-| Generation in memory | under 1 second |
-| Local Docker PostgreSQL | 3 to 8 seconds |
-| Neon from a home connection | 20 to 45 seconds (about 36 round trips) |
+| Making the data in memory | about 20 ms (measured) |
+| Saving to local PostgreSQL | about 4.5 seconds (measured) |
+| Neon over the internet | not measured yet, expected to be slower because of network round trips |
 
-Target is under 60 seconds anywhere. The measured time goes in `docs/PERFORMANCE.md`.
+The target is under 60 seconds anywhere. Details are in `docs/PERFORMANCE.md`.
 
 ### 7.8 What the seed tests check
-`generateDataset` unit tests: exactly 10,000 employees · unique codes and emails · every salary inside its band (allowing for factors and rounding) · same seed gives deep-equal output · different seed gives different output · current salary equals newest history row · hire dates not after the reference date · country, department and level shares near their targets (within a tolerance) · at least 8 countries.
-One database test: the writer inserts the expected row counts, and running it twice leaves the same counts.
+**Making the data** (no database): exactly 10,000 employees · unique codes and emails · every starting salary inside its band, after undoing the country and department adjustment · the same seed gives identical data and a different seed gives different data · the data does not depend on today's date · the current salary equals the newest history row · raises are 3% to 15%, in date order and after the hire date · country, department, level and inactive shares are close to their targets · all 10 countries are used · the same level is paid less in India than in the US.
+
+**Saving the data** (real test database): 10,000 employees saved with unique codes and emails · the current salary matches the newest history row · running it twice gives the same data without duplicates · old data is replaced · the next employee added gets the next id · an empty dataset does not fail.
+
+**Safety guard:** local databases are allowed, any other needs `SEED_CONFIRM=yes`, a host such as `localhost.evil.example` is not treated as local, and the password is never printed.
 
 ---
 

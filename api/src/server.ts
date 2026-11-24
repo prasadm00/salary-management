@@ -1,6 +1,8 @@
 import { createApp } from './app.js';
+import { createServices } from './composition.js';
 import { loadEnv } from './config/env.js';
 import { checkDatabase, createPrismaClient } from './db/prisma.js';
+import { systemClock } from './domain/clock.js';
 
 /** The only file that opens a port. Everything else is built to be tested without one. */
 function main(): void {
@@ -10,6 +12,7 @@ function main(): void {
   const app = createApp({
     checkDatabase: () => checkDatabase(prisma),
     corsOrigin: env.CORS_ORIGIN,
+    ...createServices(prisma, systemClock),
   });
 
   const server = app.listen(env.PORT, () => {

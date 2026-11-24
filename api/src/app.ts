@@ -4,12 +4,18 @@ import helmet from 'helmet';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { requestId } from './middleware/requestId.js';
+import { createCompensationRouter } from './modules/compensation/compensation.routes.js';
+import type { CompensationService } from './modules/compensation/compensation.service.js';
+import { createEmployeeRouter } from './modules/employees/employee.routes.js';
+import type { EmployeeService } from './modules/employees/employee.service.js';
 import { createHealthRouter, type HealthDependencies } from './modules/health/health.routes.js';
 
 /** Everything the app needs from the outside world. Tests pass fakes. */
 export interface AppDependencies extends HealthDependencies {
   /** Browser origin allowed to call the API. Leave out when the API serves the UI itself. */
   corsOrigin?: string | undefined;
+  employeeService: EmployeeService;
+  compensationService: CompensationService;
 }
 
 /**
@@ -28,6 +34,8 @@ export function createApp(dependencies: AppDependencies): Express {
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/api/health', createHealthRouter(dependencies));
+  app.use('/api/employees', createEmployeeRouter(dependencies.employeeService));
+  app.use('/api/employees', createCompensationRouter(dependencies.compensationService));
 
   // Order matters: unknown routes next, and the error handler must be last.
   app.use(notFoundHandler);

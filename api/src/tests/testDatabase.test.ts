@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { unusedServices } from './stubs.js';
 import { createApp } from '../app.js';
 import { checkDatabase } from '../db/prisma.js';
 import {
@@ -133,7 +134,7 @@ describe('test database', () => {
   });
 
   it('powers the health endpoint end to end', async () => {
-    const app = createApp({ checkDatabase: () => checkDatabase(prisma) });
+    const app = createApp({ ...unusedServices, checkDatabase: () => checkDatabase(prisma) });
 
     const response = await request(app).get('/api/health');
 

@@ -97,11 +97,11 @@ All diagrams use Mermaid so they render on GitHub. Put them in `docs/DESIGN.md` 
 ## Phase 4. Tooling and foundations
 **Branch:** `chore/tooling`
 
-- [ ] **4.1** TypeScript base config and strict mode in each workspace. Commit: `chore: add strict typescript config`
-- [ ] **4.2** ESLint and Prettier, with `npm run lint`. Commit: `chore: add eslint and prettier`
-- [ ] **4.3** Vitest in `api`, `web`, `shared`, with a trivial passing test. Commit: `chore: add vitest to all workspaces`
-- [ ] **4.4** GitHub Actions workflow: install, lint, test on push and PR. Commit: `chore: add ci workflow`
-- [ ] **4.5** Optional: Husky and lint-staged for pre-commit checks
+- [x] **4.1** TypeScript base config and strict mode in each workspace. Commit: `chore: add strict typescript config`
+- [x] **4.2** ESLint and Prettier, with `npm run lint`. Commit: `chore: add eslint and prettier`
+- [x] **4.3** Vitest in `api`, `web`, `shared`, with a trivial passing test. Commit: `chore: add vitest to all workspaces`
+- [x] **4.4** GitHub Actions workflow: install, lint, test on push and PR. Commit: `chore: add ci workflow`
+- [x] **4.5** Optional: Husky and lint-staged for pre-commit checks
 
 ---
 

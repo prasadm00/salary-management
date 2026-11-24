@@ -23,8 +23,19 @@ Web software for an HR manager to manage salaries for 10,000 employees across co
 cp .env.example .env
 docker compose up -d      # local PostgreSQL
 npm install
-npm test
+npm run check             # lint, format check, type-check, tests
 ```
+
+| Command | What it does |
+| --- | --- |
+| `npm run lint` / `npm run lint:fix` | ESLint (strict, type-aware) |
+| `npm run format` / `npm run format:check` | Prettier |
+| `npm run typecheck` | `tsc --noEmit` in every workspace (strict mode) |
+| `npm test` | Vitest in every workspace |
+| `npm run test:coverage` | Tests with a coverage summary |
+| `npm run check` | Everything CI runs, in one command |
+
+A pre-commit hook (Husky + lint-staged) lints and formats staged files. It is enabled by `npm install`.
 
 ## Branching and commits
 - `main` is always deployable. Work happens on short-lived branches (`feat/`, `fix/`, `chore/`, `docs/`, `test/`) merged with `--no-ff`.

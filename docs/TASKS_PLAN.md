@@ -67,13 +67,13 @@ All diagrams use Mermaid so they render on GitHub. Put them in `docs/DESIGN.md` 
 ## Phase 3. Low-level design (LLD)
 **Branch:** `docs/lld`
 
-- [ ] **3.1** ER diagram and table definitions
+- [x] **3.1** ER diagram and table definitions
   - `employees`: id, employee_code (unique), full_name, email (unique), department, job_title, level, country, employment_status, hire_date
   - `compensations`: employee_id (unique FK), amount (NUMERIC 14,2), currency (ISO 4217), effective_date
   - `compensation_changes` (history): id, employee_id, old_amount, new_amount, currency, reason, changed_at
   - `fx_rates` or a constants file: currency, rate_to_usd, as_of_date (only if D4 uses conversion)
   - Index list: employee_code, country, department, level, full_name search, `(country, department)`
-- [ ] **3.2** API contract: `docs/API.md` (OpenAPI is optional)
+- [x] **3.2** API contract: `docs/API.md` (OpenAPI is optional)
   - `GET /api/employees` with query: `q`, `country`, `department`, `level`, `status`, `sortBy`, `sortDir`, `page`, `pageSize` (max 100)
   - `GET /api/employees/:id`
   - `POST /api/employees`
@@ -84,12 +84,12 @@ All diagrams use Mermaid so they render on GitHub. Put them in `docs/DESIGN.md` 
   - `GET /api/health`
   - Standard error shape: `{ error: { code, message, details? } }`
   - Standard paged response: `{ data, page, pageSize, total }`
-- [ ] **3.3** Sequence diagrams: list with filters, update salary (with history write in one transaction), analytics query
-- [ ] **3.4** Backend module design: route, controller, service, repository per module; what each layer may and may not do
-- [ ] **3.5** Domain rules (each becomes a test): amount must be positive, max two decimals, currency must match country, new amount must differ from old, reason is required, no float arithmetic, median calculated in the database
-- [ ] **3.6** Frontend design: page list, routes, component tree, state approach (React Query for server state), screen wireframes (simple sketches)
-- [ ] **3.7** Seed design: seeded random generator, country to currency map, salary bands per level and country, realistic name and department lists, batch size 1,000, expected runtime
-- [ ] **3.8** Test strategy: pyramid, what is unit, what is HTTP-level, how the test database works, naming conventions, coverage target (core domain 90%+)
+- [x] **3.3** Sequence diagrams: list with filters, update salary (with history write in one transaction), analytics query
+- [x] **3.4** Backend module design: route, controller, service, repository per module; what each layer may and may not do
+- [x] **3.5** Domain rules (each becomes a test): amount must be positive, max two decimals, currency must match country, new amount must differ from old, reason is required, no float arithmetic, median calculated in the database
+- [x] **3.6** Frontend design: page list, routes, component tree, state approach (React Query for server state), screen wireframes (simple sketches)
+- [x] **3.7** Seed design: seeded random generator, country to currency map, salary bands per level and country, realistic name and department lists, batch size 1,000, expected runtime
+- [x] **3.8** Test strategy: pyramid, what is unit, what is HTTP-level, how the test database works, naming conventions, coverage target (core domain 90%+)
   - Commit: `docs: add low-level design (schema, API, sequences, rules, test strategy)`
 
 ---

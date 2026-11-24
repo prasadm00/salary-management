@@ -40,7 +40,7 @@ As an HR manager, I can filter by country, department, level and status, so that
 
 ### US-04 Sort employees
 As an HR manager, I can sort by name, salary, hire date, department or country, so that I can spot highest and lowest paid.
-- AC1: Ascending and descending both work.
+- AC1: Ascending and descending both work. Sorting by salary needs a single currency (or the USD view), because amounts in different currencies cannot be compared.
 - AC2: An unsupported sort column is rejected with a clear error.
 - AC3: Sorting keeps the current search and filters.
 - AC4: Sort order is stable, so paging never repeats or skips a person.

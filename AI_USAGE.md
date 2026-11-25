@@ -29,8 +29,5 @@ I built this project myself, using Kiro (an AI coding assistant) as a pair progr
 | The page fallback route crashed the server on start (Express 5 rejects `*`) | Replaced with a middleware, and added tests |
 | Some docs were rewritten from memory and no longer matched the code (invented timings, wrong schema) | Restored the measured versions from git and re-checked every document against the code |
 
-## Prompts
-Three key prompts, with what each produced, are in [`docs/prompts/`](docs/prompts/README.md).
-
 ## How I checked the result
 Lint, types and all tests pass. The accessibility checker passes on 11 page states. I tried 18 hostile requests against the API, and ran an end-to-end smoke test. Details are in `docs/QUALITY.md`.

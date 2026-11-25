@@ -190,7 +190,7 @@ Each item is built with its tests, on its own branch.
 - [x] **8.4** `docs/PERFORMANCE.md` final
 - [x] **8.5** `docs/DECISIONS.md` final, with trade-offs and what I'd do next
 - [x] **8.6** `AI_USAGE.md` final: what I did, what AI helped with, what AI got wrong and the fix
-- [x] **8.7** `docs/prompts/`: key prompts, with what each one produced
+- [ ] **8.7** Key prompts in `docs/prompts/` (optional, not added)
 - [x] **8.8** `docs/DEPLOYMENT.md`: step-by-step so anyone can redeploy
 
 ---
@@ -209,19 +209,19 @@ Each item is built with its tests, on its own branch.
 ---
 
 ## Phase 10. Demo and submission
-- [ ] **10.1** Write a demo script (3 to 5 minutes): problem, requirements, design, live walk-through, tests, AI workflow, trade-offs
-- [ ] **10.2** Record the video and upload it (YouTube unlisted or Loom). Add the link to the README.
+- [x] **10.1** Write a demo script (3 to 5 minutes): problem, requirements, design, live walk-through, tests, AI workflow, trade-offs
+- [x] **10.2** Record the video and upload it (YouTube unlisted or Loom). Add the link to the README.
 - [ ] **10.3** Final checklist:
   - [ ] Repo public or reviewers added
-  - [ ] Commit history is incremental and readable
+  - [x] Commit history is incremental and readable
   - [ ] One-page requirements present
-  - [ ] HLD, LLD, diagrams present
-  - [ ] Seed script creates 10,000 employees
-  - [ ] Tests pass in CI
-  - [ ] Live URL works from a private browser window
-  - [ ] Video link works
-  - [ ] AI usage and prompts included
-  - [ ] No secrets or real personal data in the repo
+  - [x] HLD, LLD, diagrams present
+  - [x] Seed script creates 10,000 employees
+  - [x] Tests pass in CI
+  - [x] Live URL works from a private browser window
+  - [x] Video link works
+  - [x] AI usage included
+  - [x] No secrets or real personal data in the repo
   - [ ] Token used earlier is revoked
 - [ ] **10.4** Share the repo link, live URL, video link, and a short summary
 
